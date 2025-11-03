@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculadora de horas (37,5 h)</title>
+  <style>
+    :root{--bg:#0b1220;--card:#0f172a;--muted:#94a3b8;--fg:#e2e8f0;--acc:#0ea5e9;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444}
+    *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:#0b1220;color:var(--fg)}
+    .wrap{max-width:980px;margin:0 auto;padding:24px}
+    .card{background:var(--card);border:1px solid #1f2937;border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    h1{margin:0 0 6px;font-size:22px;font-weight:700}
+    .sub{color:var(--muted);font-size:14px;margin-bottom:14px}
+    .grid{display:grid;grid-template-columns:140px 1fr 1fr 160px;gap:8px;align-items:center}
+    .head{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-top:8px}
+    .row{padding:8px;border-radius:12px}
+    .row:nth-child(even){background:rgba(148,163,184,.06)}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input[type=time]{width:100%;padding:10px 12px;border:1px solid #1f2937;border-radius:10px;background:#0b1220;color:var(--fg)}
+    .totdia{font-weight:600}
+    .totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px}
+    .kpi{background:rgba(148,163,184,.06);border:1px solid #1f2937;border-radius:14px;padding:14px}
+    .kpi .lbl{font-size:12px;color:var(--muted)}
+    .kpi .val{font-size:18px;font-weight:700;margin-top:6px}
+    .kpi.ok .val{color:var(--ok)}.kpi.warn .val{color:var(--warn)}.kpi.err .val{color:var(--err)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
+    button{padding:10px 14px;border-radius:12px;border:1px solid #1f2937;background:linear-gradient(180deg,#0ea5e9,#0284c7);color:white;font-weight:600;cursor:pointer}
+    button.secondary{background:transparent;color:var(--fg)}
+    .footer{margin-top:10px;color:var(--muted);font-size:12px}
+    @media (max-width:700px){.grid{grid-template-columns:1fr 1fr 1fr 1fr}.head{display:none} label{display:none}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Calculadora de horas</h1>
+      <div class="sub">L-V, entrada/salida, total por día y total semanal en tiempo real. Objetivo 37,5 h.</div>
+
+      <div class="grid head">
+        <div>Día</div><div>Entrada</div><div>Salida</div><div>Total día</div>
+      </div>
+
+      <div id="rows"></div>
+
+      <div class="totals">
+        <div class="kpi" id="kpi-total">
+          <div class="lbl">Total acumulado</div>
+          <div class="val" id="total-semana">0 h 00 m</div>
+        </div>
+        <div class="kpi" id="kpi-objetivo">
+          <div class="lbl">Objetivo</div>
+          <div class="val">37,5 h</div>
+        </div>
+        <div class="kpi" id="kpi-faltan">
+          <div class="lbl">Faltan / Exceso</div>
+          <div class="val" id="faltan">37 h 30 m</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <input type="file" id="importar" accept=".csv" style="display:none" />
+        <button class="secondary" id="btn-importar">Cargar semana (CSV)</button>
+        <button id="btn-exportar">Guardar semana (CSV)</button>
+      </div>
+
+      <div class="footer">Versión web sin instalación. Compatible con Windows, Android e iPhone.</div>
+    </div>
+  </div>
+
+  <script>
+    const TARGET_MIN = Math.round(37.5 * 60);
+    const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
+
+    const fmt = m => {
+      const sign = m < 0 ? '-' : '';
+      m = Math.abs(m);
+      const h = Math.floor(m/60); const mm = m%60;
+      return `${sign}${h} h ${String(mm).padStart(2,'0')} m`;
+    };
+    const parseHM = s => {
+      if (!s) return null;
+      const [hh,mm] = s.split(':').map(Number);
+      if (Number.isInteger(hh) && Number.isInteger(mm) && hh>=0 && hh<24 && mm>=0 && mm<60) return hh*60+mm;
+      return null;
+    };
+
+    const rowsEl = document.getElementById('rows');
+    const state = DIAS.map(d => ({ dia:d, entrada:'', salida:'', total:0 }));
+
+    function makeRow(idx){
+      const r = state[idx];
+      const row = document.createElement('div');
+      row.className = 'grid row';
+
+      const d = document.createElement('div');
+      d.innerHTML = `<label>${r.dia}</label><div style="font-weight:600">${r.dia}</div>`;
+
+      const eIn = document.createElement('input');
+      eIn.type = 'time'; eIn.placeholder = 'HH:MM'; eIn.value = r.entrada;
+      eIn.addEventListener('input', () => { r.entrada = eIn.value; recalc(idx); });
+
+      const eOut = document.createElement('input');
+      eOut.type = 'time'; eOut.placeholder = 'HH:MM'; eOut.value = r.salida;
+      eOut.addEventListener('input', () => { r.salida = eOut.value; recalc(idx); });
+
+      const td = document.createElement('div'); td.className='totdia'; td.textContent = '—';
+
+      row.appendChild(d);
+      const colIn = document.createElement('div'); colIn.appendChild(eIn); row.appendChild(colIn);
+      const colOut = document.createElement('div'); colOut.appendChild(eOut); row.appendChild(colOut);
+      row.appendChild(td);
+
+      rowsEl.appendChild(row);
+      return {td, eIn, eOut};
+    }
+
+    const ui = state.map((_,i)=>makeRow(i));
+
+    function recalc(i){
+      const r = state[i];
+      const ein = parseHM(r.entrada);
+      const sou = parseHM(r.salida);
+      if (ein===null || sou===null){ r.total = 0; ui[i].td.textContent='—'; updateTotals(); return; }
+      let diff = sou - ein; if (diff < 0) diff += 24*60;
+      r.total = diff;
+      ui[i].td.textContent = fmt(diff);
+      updateTotals();
+    }
+
+    function updateTotals(){
+      const sum = state.reduce((a,b)=>a + (Number.isFinite(b.total)?b.total:0), 0);
+      document.getElementById('total-semana').textContent = fmt(sum);
+      const rest = TARGET_MIN - sum;
+      document.getElementById('faltan').textContent = fmt(rest);
+      const kpiF = document.getElementById('kpi-faltan');
+      kpiF.classList.remove('ok','warn','err');
+      if (rest === 0) kpiF.classList.add('ok'); else if (rest > 0) kpiF.classList.add('warn'); else kpiF.classList.add('err');
+    }
+
+    document.getElementById('btn-exportar').addEventListener('click', ()=>{
+      const header = ['Día','Entrada','Salida','Total_día'];
+      const lines = [header.join(',')];
+      for (const r of state){ lines.push([r.dia, r.entrada, r.salida, fmt(r.total)].join(',')); }
+      const total = document.getElementById('total-semana').textContent;
+      const faltan = document.getElementById('faltan').textContent;
+      lines.push('');
+      lines.push(['Total semana', total].join(','));
+      lines.push(['Faltan/Exceso vs 37,5h', faltan].join(','));
+      const blob = new Blob([lines.join('\\n')], {type:'text/csv;charset=utf-8;'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'horas_semana.csv'; a.click(); URL.revokeObjectURL(a.href);
+    });
+
+    document.getElementById('btn-importar').addEventListener('click', ()=>{ document.getElementById('importar').click(); });
+
+    document.getElementById('importar').addEventListener('change', async (e)=>{
+      const file = e.target.files[0]; if (!file) return;
+      const text = await file.text();
+      const lines = text.split(/\\r?\\n/).filter(Boolean);
+      const data = lines.slice(1).filter(l=>!l.startsWith('Total semana') && !l.startsWith('Faltan/Exceso'));
+      let idx = 0;
+      for (const line of data){
+        const parts = line.split(',');
+        if (parts.length < 4) continue;
+        if (idx >= state.length) break;
+        state[idx].entrada = parts[1] || '';
+        state[idx].salida  = parts[2] || '';
+        ui[idx].eIn.value = state[idx].entrada;
+        ui[idx].eOut.value = state[idx].salida;
+        recalc(idx);
+        idx++;
+      }
+      updateTotals();
+      e.target.value = '';
+    });
+
+    updateTotals();
+  </script>
+</body>
+</html>
