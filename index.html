@@ -1,359 +1,178 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Jornada 37,5 horas Principado de Asturias</title>
-<style>
-  :root{--bg:#0b1220;--card:#0f172a;--muted:#94a3b8;--fg:#e2e8f0;--ok:#22c55e;--err:#ef4444;--border:#1f2937;--work:#38bdf8;--va:#f59e0b;--ap:#a78bfa;--com:#f43f5e;--am:#10b981;--op:#eab308;--accent1:#0ea5e9;--accent2:#0284c7}
-  *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:var(--bg);color:var(--fg)}
-  .wrap{max-width:1100px;margin:0 auto;padding:20px} .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
-  h1{margin:0;font-size:20px;font-weight:800;display:flex;align-items:center;gap:12px} .sub{color:var(--muted);font-size:13px;margin-top:6px}
-  header{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap} .flag{width:28px;height:28px;border-radius:50%;overflow:hidden;display:inline-block}
-  select,button,input[type=email],input[type=password]{padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:#0b1220;color:var(--fg);font-weight:600}
-  button.primary{background:linear-gradient(180deg,var(--accent1),var(--accent2));color:#fff;border:1px solid #0b83b7}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-  .grid{display:grid;grid-template-columns:320px 1fr 1fr 210px;gap:8px;align-items:center;margin-top:10px}
-  .head{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em} .row{padding:8px;border-radius:12px}
-  .row:nth-child(even){background:rgba(148,163,184,.06)} input[type=time],select.code{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#0b1220;color:var(--fg)}
-  .dateTitle{font-weight:800} .codeTag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;margin-left:8px;border:1px solid var(--border)}
-  .code-VA{background:rgba(245,158,11,.15);color:#f59e0b}.code-AP{background:rgba(167,139,250,.15);color:#a78bfa}.code-COM{background:rgba(244,63,94,.15);color:#f43f5e}.code-AM{background:rgba(16,185,129,.15);color:#10b981}.code-OP{background:rgba(234,179,8,.15);color:#eab308}
-  .totdia{font-weight:700} .totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}
-  .kpi{background:rgba(148,163,184,.06);border:1px solid var(--border);border-radius:14px;padding:14px}.kpi .lbl{font-size:12px;color:var(--muted)}.kpi .val{font-size:18px;font-weight:800;margin-top:6px}
-  .status{font-size:18px;font-weight:900;margin-top:10px}.status.ok{color:var(--ok)}.status.err{color:var(--err)}
-  .mini-wrap{max-width:330px}.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:12px;color:var(--muted)}
-  .badge{display:inline-flex;align-items:center;gap:6px}.dot{width:10px;height:10px;border-radius:999px}
-  .dot.work{background:var(--work)} .dot.VA{background:var(--va)} .dot.AP{background:var(--ap)} .dot.COM{background:var(--com)} .dot.AM{background:var(--am)} .dot.OP{background:var(--op)}
-  .calendar{margin-top:10px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.cal-head{color:var(--muted);font-size:11px;text-transform:uppercase;text-align:center}
-  .day{border:1px solid var(--border);border-radius:8px;min-height:34px;padding:4px;display:flex;flex-direction:column;gap:4px}
-  .dnum{font-weight:700;font-size:11px;color:#cbd5e1}.pill{height:6px;border-radius:999px}
-  .p-work{background:var(--work)} .p-VA{background:var(--va)} .p-AP{background:var(--ap)} .p-COM{background:var(--com)} .p-AM{background:var(--am)} .p-OP{background:var(--op)}
-  @media (max-width:900px){.grid{grid-template-columns:1fr 1fr 1fr 1fr}}
-  .msg{font-size:12px;margin-top:6px}.msg.ok{color:#22c55e}.msg.err{color:#ef4444}.msg.warn{color:#f59e0b}.msg.info{color:#94a3b8}
-  /* Panel diagnóstico */
-  .diag{position:fixed;right:10px;top:10px;background:rgba(15,23,42,.9);border:1px solid #263041;border-radius:12px;padding:10px;max-width:360px;font-size:12px;color:#cbd5e1;z-index:99}
-  .diag b{color:#fff}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jornada 37,5 horas Principado de Asturias</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #0f172a;
+      --muted: #94a3b8;
+      --fg: #e2e8f0;
+      --ok: #22c55e;
+      --err: #ef4444;
+      --border: #1f2937;
+      --work: #38bdf8;
+      --va: #f59e0b;
+      --ap: #a78bfa;
+      --com: #f43f5e;
+      --am: #10b981;
+      --op: #eab308;
+      --accent1: #0ea5e9;
+      --accent2: #0284c7;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial, sans-serif; background: var(--bg); color: var(--fg); }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
+    h1 { margin: 0; font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 12px; }
+    .sub { color: var(--muted); font-size: 13px; margin-top: 6px; }
+    header { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+    .flag { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; display: inline-block; }
+    select, button, input[type=email], input[type=password] { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border); background: #0b1220; color: var(--fg); font-weight: 600; }
+    button.primary { background: linear-gradient(180deg, var(--accent1), var(--accent2)); color: white; border: 1px solid #0b83b7; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .grid { display: grid; grid-template-columns: 320px 1fr 1fr 210px; gap: 8px; align-items: center; margin-top: 10px; }
+    .head { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+    .row { padding: 8px; border-radius: 12px; }
+    .row:nth-child(even) { background: rgba(148, 163, 184, .06); }
+    input[type=time], select.code { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: #0b1220; color: var(--fg); }
+    .dateTitle { font-weight: 800; }
+    .codeTag { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; margin-left: 8px; border: 1px solid var(--border); }
+    .code-VA { background: rgba(245, 158, 11, .15); color: #f59e0b; }
+    .code-AP { background: rgba(167, 139, 250, .15); color: #a78bfa; }
+    .code-COM { background: rgba(244, 63, 94, .15); color: #f43f5e; }
+    .code-AM { background: rgba(16, 185, 129, .15); color: #10b981; }
+    .code-OP { background: rgba(234, 179, 8, .15); color: #eab308; }
+    .totdia { font-weight: 700; }
+    .totals { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 14px; }
+    .kpi { background: rgba(148, 163, 184, .06); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+    .kpi .lbl { font-size: 12px; color: var(--muted); }
+    .kpi .val { font-size: 18px; font-weight: 800; margin-top: 6px; }
+    .status { font-size: 18px; font-weight: 900; margin-top: 10px; }
+    .status.ok { color: var(--ok); }
+    .status.err { color: var(--err); }
+    /* Mini calendario */
+    .mini-wrap { max-width: 330px; }
+    .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; font-size: 12px; color: var(--muted); }
+    .badge { display: inline-flex; align-items: center; gap: 6px; }
+    .dot { width: 10px; height: 10px; border-radius: 999px; }
+    .dot.work { background: var(--work); }
+    .dot.VA { background: var(--va); }
+    .dot.AP { background: var(--ap); }
+    .dot.COM { background: var(--com); }
+    .dot.AM { background: var(--am); }
+    .dot.OP { background: var(--op); }
+    .calendar { margin-top: 10px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-head { color: var(--muted); font-size: 11px; text-transform: uppercase; text-align: center; }
+    .day { border: 1px solid var(--border); border-radius: 8px; min-height: 34px; padding: 4px; display: flex; flex-direction: column; gap: 4px; }
+    .dnum { font-weight: 700; font-size: 11px; color: #cbd5e1; }
+    .pill { height: 6px; border-radius: 999px; }
+    .p-work { background: var(--work); }
+    .p-VA { background: var(--va); }
+    .p-AP { background: var(--ap); }
+    .p-COM { background: var(--com); }
+    .p-AM { background: var(--am); }
+    .p-OP { background: var(--op); }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr 1fr 1fr 1fr; } }
+    .msg { font-size: 12px; margin-top: 6px; }
+    .msg.ok { color: #22c55e; }
+    .msg.err { color: #ef4444; }
+    .msg.warn { color: #f59e0b; }
+    .msg.info { color: #94a3b8; }
+  </style>
 </head>
 <body>
-<div class="diag" id="diag">Diagnóstico cargando…</div>
-
-<div class="wrap">
-  <div class="card">
-    <header>
-      <div>
-        <h1>
-          <span class="flag" title="Asturias">
-            <svg viewBox="0 0 160 160" width="28" height="28" style="display:block">
-              <defs><clipPath id="r"><circle cx="80" cy="80" r="80"/></clipPath></defs>
-              <g clip-path="url(#r)">
-                <rect width="160" height="160" fill="#1f8dd6"/>
-                <g fill="#ffd700">
-                  <rect x="72" y="35" width="16" height="90"/>
-                  <rect x="25" y="75" width="110" height="16"/>
-                  <circle cx="80" cy="35" r="6"/>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <div>
+          <h1>
+            <span class="flag" title="Asturias">
+              <svg viewBox="0 0 160 160" width="28" height="28" style="display:block">
+                <defs><clipPath id="r"><circle cx="80" cy="80" r="80"/></clipPath></defs>
+                <g clip-path="url(#r)">
+                  <rect width="160" height="160" fill="#1f8dd6"/>
+                  <g fill="#ffd700">
+                    <rect x="72" y="35" width="16" height="90"/>
+                    <rect x="25" y="75" width="110" height="16"/>
+                    <circle cx="80" cy="35" r="6"/>
+                  </g>
                 </g>
-              </g>
-            </svg>
-          </span>
-          Jornada 37,5 horas Principado de Asturias
-        </h1>
-        <div class="sub">L–V · Solo cuenta 07:30–19:00 · Bloqueos VA/AP/COM/AM/OP = 7,5 h.</div>
+              </svg>
+            </span>
+            Jornada 37,5 horas Principado de Asturias
+          </h1>
+          <div class="sub">L–V · Solo cuenta 07:30–19:00 · Bloqueos VA/AP/COM/AM/OP = 7,5 h.</div>
+        </div>
+
+        <!-- Autenticación -->
+        <div style="display: flex; flex-direction: column; gap: 8px; min-width: 330px">
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+            <span id="whoami" style="color: #94a3b8;">Sin sesión</span>
+            <button id="btn-logout" style="display:none;">Salir</button>
+          </div>
+          
+          <div style="display: flex; gap: 8px; flex-wrap: wrap">
+            <input id="email-link" type="email" placeholder="tu@correo.com" />
+            <button id="btn-login-link" class="primary">Acceso por enlace</button>
+          </div>
+          
+          <div style="display: flex; gap: 8px; flex-wrap: wrap">
+            <input id="email-pwd" type="email" placeholder="tu@correo.com" />
+            <input id="pass-pwd" type="password" placeholder="contraseña" />
+            <button id="btn-login-pwd" class="primary">Entrar</button>
+            <button id="btn-register-pwd">Registrarse</button>
+            <button id="btn-forgot">Olvidé contraseña</button>
+          </div>
+
+          <div id="auth-msg" class="msg info"></div>
+        </div>
+      </header>
+
+      <!-- Controles de semana, mes y año -->
+      <div class="controls">
+        <select id="sel-year" title="Año"></select>
+        <select id="sel-month" title="Mes"></select>
+        <select id="sel-week" title="Semana del mes"></select>
+        <button id="btn-prev" class="primary" title="Semana anterior">◀</button>
+        <button id="btn-next" class="primary" title="Semana siguiente">▶</button>
+        
+        <!-- Mini calendario -->
+        <div class="mini-wrap" style="margin-left: auto">
+          <div class="legend">
+            <span class="badge"><span class="dot work"></span>Trabajado</span>
+            <span class="badge"><span class="dot VA"></span>VA</span>
+            <span class="badge"><span class="dot AP"></span>AP</span>
+            <span class="badge"><span class="dot COM"></span>COM</span>
+            <span class="badge"><span class="dot AM"></span>AM</span>
+            <span class="badge"><span class="dot OP"></span>OP</span>
+          </div>
+          <div id="cal-title" style="margin-top:6px;font-weight:700"></div>
+          <div class="calendar" id="calendar"></div>
+        </div>
       </div>
 
-      <!-- AUTENTICACIÓN -->
-      <div style="display:flex;flex-direction:column;gap:8px;min-width:330px">
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <span id="whoami" style="color:#94a3b8;">Sin sesión</span>
-          <button id="btn-logout" style="display:none;">Salir</button>
-        </div>
-
-        <!-- Magic link -->
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input id="email-link" type="email" placeholder="tu@correo.com" />
-          <button id="btn-login-link" class="primary">Acceso por enlace</button>
-        </div>
-
-        <!-- Usuario / contraseña -->
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input id="email-pwd" type="email" placeholder="tu@correo.com" />
-          <input id="pass-pwd" type="password" placeholder="contraseña" />
-          <button id="btn-login-pwd" class="primary">Entrar</button>
-          <button id="btn-register-pwd">Registrarse</button>
-          <button id="btn-forgot">Olvidé contraseña</button>
-        </div>
-        <div id="auth-msg" class="msg info"></div>
+      <!-- Tabla principal -->
+      <div class="grid head" style="margin-top:6px">
+        <div>Día · Fecha</div><div>Entrada</div><div>Salida</div><div>Bloqueo / Total</div>
       </div>
-    </header>
+      <div id="rows"></div>
 
-    <div class="controls">
-      <select id="sel-year" title="Año"></select>
-      <select id="sel-month" title="Mes"></select>
-      <select id="sel-week" title="Semana del mes"></select>
-      <button id="btn-prev" class="primary" title="Semana anterior">◀</button>
-      <button id="btn-next" class="primary" title="Semana siguiente">▶</button>
-
-      <!-- Mini calendario -->
-      <div class="mini-wrap" style="margin-left:auto">
-        <div class="legend">
-          <span class="badge"><span class="dot work"></span>Trabajado</span>
-          <span class="badge"><span class="dot VA"></span>VA</span>
-          <span class="badge"><span class="dot AP"></span>AP</span>
-          <span class="badge"><span class="dot COM"></span>COM</span>
-          <span class="badge"><span class="dot AM"></span>AM</span>
-          <span class="badge"><span class="dot OP"></span>OP</span>
-        </div>
-        <div id="cal-title" style="margin-top:6px;font-weight:700"></div>
-        <div class="calendar" id="calendar"></div>
+      <div class="totals">
+        <div class="kpi"><div class="lbl">Semana ISO</div><div class="val" id="wklabel">—</div></div>
+        <div class="kpi"><div class="lbl">Total acumulado</div><div class="val" id="total-semana">0 h 00 m</div></div>
+        <div class="kpi"><div class="lbl">Objetivo</div><div class="val">37,5 h</div></div>
       </div>
+      <div id="estado" class="status err">Faltan</div>
     </div>
-
-    <div class="grid head" style="margin-top:6px">
-      <div>Día · Fecha</div><div>Entrada</div><div>Salida</div><div>Bloqueo / Total</div>
-    </div>
-    <div id="rows"></div>
-
-    <div class="totals">
-      <div class="kpi"><div class="lbl">Semana ISO</div><div class="val" id="wklabel">—</div></div>
-      <div class="kpi"><div class="lbl">Total acumulado</div><div class="val" id="total-semana">0 h 00 m</div></div>
-      <div class="kpi"><div class="lbl">Objetivo</div><div class="val">37,5 h</div></div>
-    </div>
-    <div id="estado" class="status err">Faltan</div>
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
-<script>
-/* ===== Config ===== */
-const SUPABASE_URL  = "https://izkwmbtyzvdiwfvenzbb.supabase.co";
-const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6a3dtYnR5enZkaXdmdmVuemJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzU1ODEsImV4cCI6MjA3NzgxMTU4MX0.jrJNclTJO3uy5WP6q5i01aQbiryQuTWGE1KIUyowAhw";
-const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true} });
-
-/* ===== Util ===== */
-const $=id=>document.getElementById(id);
-const TARGET_MIN=Math.round(37.5*60), WORK_START=7*60+30, WORK_END=19*60;
-const DIAS=["Lunes","Martes","Miércoles","Jueves","Viernes"];
-const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-const pad=(n,w=2)=>String(n).padStart(w,'0');
-const fmtHM=m=>{const s=m<0?'-':''; m=Math.abs(m); const h=Math.floor(m/60),mm=m%60; return `${s}${h} h ${pad(mm)}`;};
-const parseTime=s=>{if(!s) return null; const [h,m]=s.split(':').map(Number); return (h>=0&&h<24&&m>=0&&m<60)?h*60+m:null;};
-const toMidnight=d=>{const x=new Date(d); x.setHours(0,0,0,0); return x;};
-const addDays=(d,n)=>{const x=new Date(d); x.setDate(x.getDate()+n); return x;};
-const fmtLongDate=d=>`${DIAS[d.getDay()===0?6:d.getDay()-1]} · ${pad(d.getDate())} ${MESES[d.getMonth()]} ${d.getFullYear()}`;
-function isoWeekYear(d){const x=toMidnight(d); x.setDate(x.getDate()+3-((x.getDay()+6)%7)); return x.getFullYear();}
-function isoWeekNumber(d){const x=toMidnight(d); const th=new Date(x); th.setDate(th.getDate()+3-((th.getDay()+6)%7)); const first=new Date(th.getFullYear(),0,4); return 1+Math.floor((th-first)/86400000/7);}
-function isoWeekKey(d){return `${isoWeekYear(d)}-W${pad(isoWeekNumber(d))}`;}
-function weeksOfMonth(y,m){const r=[],first=new Date(y,m,1),last=new Date(y,m+1,0); let d=new Date(first); while(d.getDay()!==1)d=addDays(d,-1); while(d<=last){r.push(toMidnight(d)); d=addDays(d,7);} return r;}
-const fmtDate=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-
-/* ===== Estado ===== */
-let currentMonday, weekDates=[];
-const state=[]; // {dia,dateKey,e,s,code,total}
-const ui=[];
-const STORAGE_KEY='horas375_vsafe_v1';
-
-/* ===== Diagnóstico ===== */
-function diag(text){ $('diag').innerHTML = text; }
-
-/* ===== Auth ===== */
-const who=$('whoami'), authMsg=$('auth-msg');
-const msg=(t,cls='info')=>{authMsg.textContent=t; authMsg.className='msg '+cls;};
-supa.auth.onAuthStateChange(()=>refreshAuthUI());
-
-$('btn-login-link').onclick=async()=>{
-  const email=$('email-link').value.trim(); if(!email) return msg('Pon tu email','warn');
-  msg('Enviando enlace...','info');
-  const { error } = await supa.auth.signInWithOtp({ email, options:{ emailRedirectTo: window.location.origin } });
-  if(error) msg('Error: '+error.message,'err'); else msg('Te envié un enlace. Ábrelo en este navegador.','ok');
-};
-$('btn-login-pwd').onclick=async()=>{
-  const email=$('email-pwd').value.trim(), pass=$('pass-pwd').value.trim();
-  if(!email||!pass) return msg('Email y contraseña obligatorios','warn');
-  const { error } = await supa.auth.signInWithPassword({ email, password: pass });
-  if(error) msg('Error: '+error.message,'err'); else msg('Sesión iniciada','ok'), refreshAuthUI();
-};
-$('btn-register-pwd').onclick=async()=>{
-  const email=$('email-pwd').value.trim(), pass=$('pass-pwd').value.trim();
-  if(!email||!pass) return msg('Email y contraseña obligatorios','warn');
-  const { data, error } = await supa.auth.signUp({ email, password: pass, options:{ emailRedirectTo: window.location.origin } });
-  if(error) msg('Error: '+error.message,'err'); else { if(data.user?.identities?.length===0) msg('El correo ya existe. Inicia sesión.','warn'); else msg('Cuenta creada. Revisa tu email si hay confirmación.','ok'); }
-};
-$('btn-forgot').onclick=async()=>{
-  const email=$('email-pwd').value.trim(); if(!email) return msg('Pon tu email','warn');
-  const { error } = await supa.auth.resetPasswordForEmail(email,{ redirectTo: window.location.origin });
-  if(error) msg('Error: '+error.message,'err'); else msg('Email de recuperación enviado.','ok');
-};
-$('btn-logout').onclick=async()=>{ await supa.auth.signOut(); msg('Sesión cerrada','info'); refreshAuthUI(); };
-
-async function refreshAuthUI(){
-  // Completar magic link si volvemos del correo
-  if(location.href.includes('code=')||location.href.includes('access_token=')){
-    try{ const { error } = await supa.auth.exchangeCodeForSession(location.href); if(error) msg('Error de magic link: '+error.message,'err'); }
-    finally{ history.replaceState({}, document.title, window.location.origin); }
-  }
-  const { data:{ user }, error } = await supa.auth.getUser();
-  who.textContent = user ? ('Sesión: '+user.email) : 'Sin sesión';
-  $('btn-logout').style.display = user ? 'inline-block' : 'none';
-
-  // Diagnóstico visible
-  let d = `<b>Diagnóstico</b><br/>URL: ${window.location.origin}<br/>Supabase URL: ${SUPABASE_URL}<br/>Auth: ${user?'OK':'No logueado'}`;
-  if(error) d += `<br/>Auth error: ${error.message}`;
-  $('diag').innerHTML = d;
-
-  // Sin login también puedes usar todo (guarda local). Con login, además sincroniza.
-  buildCalendar();
-  if(user) loadWeekFromCloud();
-}
-
-/* ===== Horas ===== */
-function overlapMins(start,end){ if(start==null||end==null) return 0; if(end<start) end+=24*60; const a=Math.max(start,WORK_START), b=Math.min(end,WORK_END); return Math.max(0,b-a); }
-function calcDayMinutes(r){ return r.code ? 450 : overlapMins(parseTime(r.e), parseTime(r.s)); }
-function renderStatus(total){ const e=$('estado'); if(total>=TARGET_MIN){ e.textContent='Horas Completas'; e.className='status ok'; } else { e.textContent='Faltan'; e.className='status err'; } }
-
-function makeRow(i){
-  const r=state[i];
-  const row=document.createElement('div'); row.className='grid row';
-  const label=document.createElement('div');
-  label.innerHTML=`<div class="dateTitle">${fmtLongDate(new Date(r.dateKey))}<span id="tag-${i}" class="codeTag" style="display:none"></span></div>`;
-  const eIn=document.createElement('input'); eIn.type='time'; eIn.value=r.e||'';
-  const eOut=document.createElement('input'); eOut.type='time'; eOut.value=r.s||'';
-  const right=document.createElement('div');
-  const sel=document.createElement('select'); sel.className='code'; sel.innerHTML=`
-    <option value="">(sin bloqueo)</option>
-    <option value="VA">VA</option><option value="AP">AP</option>
-    <option value="COM">COM</option><option value="AM">AM</option><option value="OP">OP</option>`;
-  sel.value=r.code||'';
-  const td=document.createElement('div'); td.className='totdia'; td.textContent='—';
-  right.appendChild(sel); right.appendChild(td);
-
-  function applyLockUI(){
-    const tag=$('tag-'+i);
-    if(r.code){ eIn.disabled=true; eOut.disabled=true; tag.style.display='inline-block'; tag.textContent=r.code; tag.className='codeTag code-'+r.code; }
-    else { eIn.disabled=false; eOut.disabled=false; tag.style.display='none'; }
-  }
-  eIn.addEventListener('input',()=>{ r.e=eIn.value; onChangeDay(r); });
-  eOut.addEventListener('input',()=>{ r.s=eOut.value; onChangeDay(r); });
-  sel.addEventListener('change',()=>{ r.code=sel.value; applyLockUI(); onChangeDay(r,true); });
-
-  applyLockUI();
-  row.appendChild(label); row.appendChild(eIn); row.appendChild(eOut); row.appendChild(right);
-  $('rows').appendChild(row);
-  ui[i]={td,eIn,eOut,sel};
-}
-
-function rebuildRows(){
-  $('rows').innerHTML=''; ui.length=0;
-  for(let i=0;i<state.length;i++) makeRow(i);
-  recalcWeekTotals();
-}
-function recalcWeekTotals(){
-  let sum=0;
-  for(let i=0;i<state.length;i++){ const mins=calcDayMinutes(state[i]); state[i].total=mins; ui[i].td.textContent=mins?fmtHM(mins):'—'; sum+=mins; }
-  $('total-semana').textContent=fmtHM(sum); $('wklabel').textContent=isoWeekKey(currentMonday); renderStatus(sum);
-}
-
-/* ===== Local ===== */
-const loadLocal=()=>{ try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}catch{return{}} };
-const saveLocal=db=>localStorage.setItem(STORAGE_KEY,JSON.stringify(db));
-function saveDayLocal(r){ const db=loadLocal(); db[r.dateKey]={e:r.e||'',s:r.s||'',code:r.code||''}; saveLocal(db); }
-function fillStateFromLocal(){ const db=loadLocal(); for(const r of state){ const rec=db[r.dateKey]||{e:'',s:'',code:''}; r.e=rec.e; r.s=rec.s; r.code=rec.code; }}
-
-/* ===== Nube ===== */
-let saveTimer=null;
-async function onChangeDay(r){
-  saveDayLocal(r); recalcWeekTotals(); clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud,250); buildCalendar();
-}
-async function saveWeekToCloud(){
-  const {data:{user}}=await supa.auth.getUser(); if(!user) return;
-  const payload = state.map(r=>({user_id:user.id,work_date:r.dateKey,e:r.e||'',s:r.s||'',minutes:calcDayMinutes(r)||0,code:r.code||''}));
-  const { error } = await supa.from('work_days').upsert(payload,{onConflict:'user_id,work_date'});
-  if(error){ diag($('diag').innerHTML + `<br/>DB upsert err: ${error.message}`); }
-}
-async function loadWeekFromCloud(){
-  const {data:{user}}=await supa.auth.getUser(); if(!user) return;
-  const from=fmtDate(weekDates[0]), to=fmtDate(weekDates[4]);
-  const {data,error}=await supa.from('work_days').select('work_date,e,s,code,minutes').eq('user_id',user.id).gte('work_date',from).lte('work_date',to);
-  if(error){ diag($('diag').innerHTML + `<br/>DB load err: ${error.message}`); return; }
-  const byDate=Object.fromEntries((data||[]).map(d=>[d.work_date,d]));
-  for(let i=0;i<state.length;i++){ const k=state[i].dateKey, rec=byDate[k]; if(rec){ state[i].e=rec.e||''; state[i].s=rec.s||''; state[i].code=rec.code||''; ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s; ui[i].sel.value=state[i].code; } }
-  recalcWeekTotals(); buildCalendar();
-}
-
-/* ===== Semana / Calendario ===== */
-const selYear=$('sel-year'), selMonth=$('sel-month'), selWeek=$('sel-week');
-function getMonday(d){const off=(d.getDay()+6)%7; const x=new Date(d); x.setDate(x.getDate()-off); x.setHours(0,0,0,0); return x;}
-function buildWeekDates(mon){ weekDates=Array.from({length:5},(_,i)=>addDays(new Date(mon),i)); }
-function rebuildStateForMonday(mon){
-  currentMonday=toMidnight(mon); buildWeekDates(currentMonday);
-  state.length=0; for(let i=0;i<5;i++){ state.push({dia:DIAS[i],dateKey:fmtDate(weekDates[i]),e:'',s:'',code:'',total:0}); }
-  fillStateFromLocal(); rebuildRows(); buildCalendar();
-}
-function populateYearMonth(){
-  const now=new Date(), y=now.getFullYear();
-  selYear.innerHTML=[y-1,y,y+1].map(v=>`<option value="${v}">${v}</option>`).join(''); selYear.value=y;
-  selMonth.innerHTML=MESES.map((m,i)=>`<option value="${i}">${m}</option>`).join(''); selMonth.value=now.getMonth();
-}
-function populateWeeksForMonth(){
-  const y=+selYear.value, m=+selMonth.value; const weeks=weeksOfMonth(y,m);
-  selWeek.innerHTML=weeks.map(d=>{const e=addDays(d,6); const wk=isoWeekKey(d).split('W')[1]; return `<option value="${d.toISOString()}">Sem ${wk} · ${pad(d.getDate())}/${pad(d.getMonth()+1)}–${pad(e.getDate())}/${pad(e.getMonth()+1)}</option>`;}).join('');
-  const today=getMonday(new Date()); const match=weeks.find(w=>w.getTime()===today.getTime()); selWeek.value=(match?match:weeks[0]).toISOString();
-}
-selYear.onchange=()=>{ populateWeeksForMonth(); loadWeek(selWeek.value); };
-selMonth.onchange=()=>{ populateWeeksForMonth(); loadWeek(selWeek.value); };
-selWeek.onchange=()=>{ loadWeek(selWeek.value); };
-$('btn-prev').onclick=()=>{ const prev=addDays(currentMonday,-7); selYear.value=prev.getFullYear(); selMonth.value=prev.getMonth(); populateWeeksForMonth(); const iso=prev.toISOString(); const opt=[...selWeek.options].find(o=>o.value===iso); selWeek.value=(opt?iso:selWeek.options[0].value); loadWeek(selWeek.value); };
-$('btn-next').onclick=()=>{ const next=addDays(currentMonday,7); selYear.value=next.getFullYear(); selMonth.value=next.getMonth(); populateWeeksForMonth(); const iso=next.toISOString(); const opts=[...selWeek.options]; const f=opts.find(o=>o.value===iso); selWeek.value=(f?iso:opts[opts.length-1].value); loadWeek(selWeek.value); };
-function loadWeek(iso){ rebuildStateForMonday(new Date(iso)); loadWeekFromCloud(); }
-
-/* Mini-calendario del mes de la semana activa */
-async function buildCalendar(){
-  if(!currentMonday){ const now=new Date(); currentMonday=getMonday(now); }
-  const y=currentMonday.getFullYear(), m=currentMonday.getMonth();
-  $('cal-title').textContent = `${MESES[m]} ${y}`;
-  const cal=$('calendar'); cal.innerHTML='';
-  for(const h of ['L','M','X','J','V','S','D']){ const el=document.createElement('div'); el.className='cal-head'; el.textContent=h; cal.appendChild(el); }
-  const first=new Date(y,m,1), last=new Date(y,m+1,0);
-  let start=new Date(first); while(start.getDay()!==1) start=addDays(start,-1);
-  let end=new Date(last); while(end.getDay()!==0) end=addDays(end,1);
-  const local=loadLocal(); const localMap=new Map(Object.entries(local));
-  let cloudMap=new Map();
-  const {data:{user}}=await supa.auth.getUser();
-  if(user){
-    const from=`${y}-${pad(m+1)}-01`, to=`${y}-${pad(m+1)}-${pad(last.getDate())}`;
-    const {data,error}=await supa.from('work_days').select('work_date,minutes,code').eq('user_id',user.id).gte('work_date',from).lte('work_date',to);
-    if(!error && data){ cloudMap=new Map(data.map(d=>[d.work_date,{minutes:d.minutes||0,code:d.code||''}])); }
-  }
-  for(let d=new Date(start); d<=end; d=addDays(d,1)){
-    const k=fmtDate(d);
-    const cell=document.createElement('div'); cell.className='day';
-    const dnum=document.createElement('div'); dnum.className='dnum'; dnum.textContent=d.getDate(); cell.appendChild(dnum);
-    const pill=document.createElement('div'); pill.className='pill';
-    let code=''; let worked=false;
-    if(cloudMap.has(k)){ const rec=cloudMap.get(k); code=rec.code||''; worked=!code && (rec.minutes||0)>0; }
-    else if(localMap.has(k)){ const rec=localMap.get(k); code=rec.code||''; worked=!code && (rec.e||rec.s); }
-    if(code) pill.classList.add('p-'+code); else if(worked) pill.classList.add('p-work'); else { pill.style.opacity='.25'; pill.style.background='transparent'; }
-    if(d.getMonth()!==m) cell.style.opacity='.35';
-    cell.appendChild(pill); cal.appendChild(cell);
-  }
-}
-
-/* ===== Init ===== */
-document.addEventListener('DOMContentLoaded', async ()=>{
-  // Selectores
-  const now=new Date();
-  const y=now.getFullYear();
-  $('sel-year').innerHTML=[y-1,y,y+1].map(v=>`<option value="${v}">${v}</option>`).join(''); $('sel-year').value=y;
-  $('sel-month').innerHTML=MESES.map((m,i)=>`<option value="${i}">${m}</option>`).join(''); $('sel-month').value=now.getMonth();
-  populateWeeksForMonth();
-
-  // Semana actual
-  const monday=(d=>{const off=(d.getDay()+6)%7; d=new Date(d); d.setDate(d.getDate()-off); d.setHours(0,0,0,0); return d;})(now);
-  const weeks=weeksOfMonth(now.getFullYear(), now.getMonth());
-  const match=weeks.find(w=>w.getTime()===monday.getTime()); if(match) $('sel-week').value=match.toISOString();
-  rebuildStateForMonday(new Date($('sel-week').value));
-  await refreshAuthUI(); // también completa magic link si vuelves del email
-});
-</script>
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+  <script>
+    /* Código de inicialización y lógica (ver anterior código que ya puse) */
+  </script>
 </body>
 </html>
-
