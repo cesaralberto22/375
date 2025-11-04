@@ -265,7 +265,11 @@
     }
     btnLogin.addEventListener('click', async ()=>{
       const mail=(email.value||'').trim(); if(!mail) { alert('Pon tu email'); return; }
-      const { error } = await supa.auth.signInWithOtp({ email: mail, options: { emailRedirectTo: window.location.href } });
+      const REDIRECT_URL = "https://375-phi.vercel.app"; // ← tu URL en Vercel
+const { error } = await supa.auth.signInWithOtp({
+  email: mail,
+  options: { emailRedirectTo: REDIRECT_URL }
+});
       if (error) alert(error.message); else alert('Te envié un enlace al email. Ábrelo para iniciar sesión.');
     });
     btnLogout.addEventListener('click', async ()=>{ await supa.auth.signOut(); currentUser=null; refreshAuthUI(); });
@@ -336,3 +340,4 @@
   </script>
 </body>
 </html>
+
