@@ -3,37 +3,36 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Horas 37,5 · Semanas (con usuarios)</title>
-  <meta name="description" content="Calculadora de horas L–V con tope 07:30–19:00, guardado por usuario y semana ISO en Supabase, navegación Año→Mes→Semana y CSV." />
+  <title>Horas 37,5 · Por fecha (L–V)</title>
   <style>
-    :root{--bg:#0b1220;--card:#0f172a;--muted:#94a3b8;--fg:#e2e8f0;--acc:#0ea5e9;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444}
+    :root{--bg:#0b1220;--card:#0f172a;--muted:#94a3b8;--fg:#e2e8f0;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444}
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:#0b1220;color:var(--fg)}
     .wrap{max-width:1100px;margin:0 auto;padding:20px}
-    .card{background:var(--card);border:1px solid #1f2937;border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .card{background:#0f172a;border:1px solid #1f2937;border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
     h1{margin:0;font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px}
-    .sub{color:var(--muted);font-size:13px;margin-top:6px}
+    .sub{color:#94a3b8;font-size:13px;margin-top:6px}
     header{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     .flag{width:28px;height:20px;border-radius:3px;display:inline-block}
     .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
     select,button,input[type=email],input[type=password]{padding:9px 12px;border-radius:10px;border:1px solid #1f2937;background:#0b1220;color:var(--fg);font-weight:600}
     button.primary{background:linear-gradient(180deg,#0ea5e9,#0284c7);color:white;border:1px solid #0b83b7}
-    .grid{display:grid;grid-template-columns:140px 1fr 1fr 160px;gap:8px;align-items:center;margin-top:10px}
-    .head{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+    .grid{display:grid;grid-template-columns:200px 1fr 1fr 160px;gap:8px;align-items:center;margin-top:10px}
+    .head{color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
     .row{padding:8px;border-radius:12px}
     .row:nth-child(even){background:rgba(148,163,184,.06)}
-    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    label{display:block;font-size:12px;color:#94a3b8;margin-bottom:6px}
     input[type=time]{width:100%;padding:10px 12px;border:1px solid #1f2937;border-radius:10px;background:#0b1220;color:var(--fg)}
     .totdia{font-weight:700}
     .totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}
     .kpi{background:rgba(148,163,184,.06);border:1px solid #1f2937;border-radius:14px;padding:14px}
-    .kpi .lbl{font-size:12px;color:var(--muted)}
+    .kpi .lbl{font-size:12px;color:#94a3b8}
     .kpi .val{font-size:18px;font-weight:800;margin-top:6px}
     .kpi.ok .val{color:var(--ok)}.kpi.warn .val{color:var(--warn)}.kpi.err .val{color:var(--err)}
     .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
-    .hint{color:var(--muted);font-size:12px;margin-top:8px}
+    .hint{color:#94a3b8;font-size:12px;margin-top:8px}
     .msg{font-size:12px;margin-top:6px}
-    .msg.ok{color:var(--ok)} .msg.err{color:var(--err)} .msg.warn{color:var(--warn)} .msg.info{color:var(--muted)}
+    .msg.ok{color:var(--ok)} .msg.err{color:var(--err)} .msg.warn{color:var(--warn)} .msg.info{color:#94a3b8}
     .auth-box{display:flex;flex-direction:column;gap:8px;min-width:330px}
     .auth-tabs{display:flex;gap:8px;margin-top:2px}
     .tab{padding:6px 10px;border:1px solid #1f2937;border-radius:10px;cursor:pointer}
@@ -42,7 +41,7 @@
     .auth-views>div.active{display:flex}
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}
     .modal .box{background:#0f172a;border:1px solid #1f2937;border-radius:16px;padding:18px;max-width:420px;width:90%}
-    @media (max-width:720px){.grid{grid-template-columns:1fr 1fr 1fr 1fr}.head{display:none} label{display:none}}
+    @media (max-width:820px){.grid{grid-template-columns:1fr 1fr 1fr 1fr}.head{display:none} label{display:none}}
   </style>
 </head>
 <body>
@@ -61,9 +60,9 @@
                 </g>
               </svg>
             </span>
-            Horas 37,5 · Semanas
+            Horas 37,5 · Por fecha
           </h1>
-          <div class="sub">L–V. Cuenta solo <strong>07:30–19:00</strong>. Guardado por <strong>usuario</strong> y <strong>semana ISO</strong>. Navegación por meses.</div>
+          <div class="sub">L–V. Cuenta solo <strong>07:30–19:00</strong>. Guarda por <strong>usuario</strong> y <strong>fecha (YYYY-MM-DD)</strong>. Navegación Año→Mes→Semana.</div>
         </div>
 
         <!-- AUTENTICACIÓN -->
@@ -79,13 +78,10 @@
           </div>
 
           <div class="auth-views">
-            <!-- Enlace mágico -->
             <div id="view-link" class="active">
               <input id="email-link" type="email" placeholder="tu@correo.com" />
               <button id="btn-login-link" class="primary">Enviar enlace</button>
             </div>
-
-            <!-- Usuario/Contraseña -->
             <div id="view-pwd">
               <input id="email-pwd" type="email" placeholder="tu@correo.com" />
               <input id="pass-pwd" type="password" placeholder="contraseña" />
@@ -108,13 +104,13 @@
       </header>
 
       <div class="grid head" style="margin-top:6px">
-        <div>Día</div><div>Entrada</div><div>Salida</div><div>Total día</div>
+        <div>Día · Fecha</div><div>Entrada</div><div>Salida</div><div>Total día</div>
       </div>
       <div id="rows"></div>
 
       <div class="totals">
         <div class="kpi" id="kpi-total">
-          <div class="lbl">Total acumulado (semana <span id="wklabel"></span>)</div>
+          <div class="lbl">Total acumulado semana <span id="wklabel"></span></div>
           <div class="val" id="total-semana">0 h 00 m</div>
         </div>
         <div class="kpi">
@@ -133,12 +129,12 @@
         <button id="btn-exportar">Guardar semana (CSV)</button>
       </div>
       <div class="hint">
-        Sin sesión: guarda local por semana. Con sesión: nube (Supabase) y lo ves desde cualquier dispositivo.
+        Sin sesión: guarda local por fecha. Con sesión: se sincroniza en Supabase (tabla <code>work_days</code>).
       </div>
     </div>
   </div>
 
-  <!-- Modal para cambiar contraseña (flujo de recuperación) -->
+  <!-- Modal recuperación contraseña -->
   <div id="modal-reset" class="modal">
     <div class="box">
       <h3 style="margin:0 0 8px">Nueva contraseña</h3>
@@ -152,24 +148,22 @@
     </div>
   </div>
 
-  <!-- Supabase SDK -->
   <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
   <script>
-    // ======= Supabase (tus credenciales) =======
+    // === Supabase ===
     const SUPABASE_URL  = "https://izkwmbtyzvdiwfvenzbb.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6a3dtYnR5enZkaXdmdmVuemJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzU1ODEsImV4cCI6MjA3NzgxMTU4MX0.jrJNclTJO3uy5WP6q5i01aQbiryQuTWGE1KIUyowAhw";
-    const REDIRECT_URL  = window.location.origin; // dominio actual (Vercel)
+    const REDIRECT_URL  = window.location.origin;
 
     const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
 
-    // ======= Auth UI =======
+    // === Helpers UI/Auth ===
     const $ = id => document.getElementById(id);
-    const setMsg = (text, type='info') => { const el=$('auth-msg'); el.textContent=text; el.className=`msg ${type}`; };
-    const setResetMsg = (text, type='info') => { const el=$('reset-msg'); el.textContent=text; el.className=`msg ${type}`; };
-    const showModal = (id, show)=>{ $(id).style.display = show?'flex':'none'; };
+    const setMsg = (t,ty='info') => { const el=$('auth-msg'); el.textContent=t; el.className=`msg ${ty}`; };
+    const setResetMsg = (t,ty='info') => { const el=$('reset-msg'); el.textContent=t; el.className=`msg ${ty}`; };
+    const showModal = (id,show)=>{ $(id).style.display = show?'flex':'none'; };
 
     document.querySelectorAll('.tab').forEach(t=>{
       t.addEventListener('click', ()=>{
@@ -181,8 +175,7 @@
       });
     });
 
-    const who = $('whoami');
-    const btnLogout = $('btn-logout');
+    const who=$('whoami'), btnLogout=$('btn-logout');
 
     async function refreshAuthUI(){
       const { data:{ user } } = await supa.auth.getUser();
@@ -190,7 +183,7 @@
         who.textContent = `Sesión: ${user.email}`;
         btnLogout.style.display='inline-block';
         setMsg('Sesión iniciada','ok');
-        loadWeekFromCloud(); // intenta traer la semana visible
+        loadWeekFromCloud(); // refresca los días de la semana visible
       } else {
         who.textContent = 'Sin sesión';
         btnLogout.style.display='none';
@@ -199,20 +192,15 @@
     }
     supa.auth.onAuthStateChange((_evt,_session)=>{ refreshAuthUI(); });
 
-    // Enlace mágico
     $('btn-login-link').addEventListener('click', async ()=>{
       const mail = ($('email-link').value||'').trim();
       if(!mail){ setMsg('Pon tu email','warn'); return; }
       setMsg('Enviando enlace...','info');
-      const { error } = await supa.auth.signInWithOtp({
-        email: mail,
-        options: { emailRedirectTo: REDIRECT_URL }
-      });
+      const { error } = await supa.auth.signInWithOtp({ email: mail, options:{ emailRedirectTo: REDIRECT_URL } });
       if (error) setMsg('Error enviando enlace: ' + error.message, 'err');
       else setMsg('Te envié un enlace. Ábrelo desde este mismo navegador.','ok');
     });
 
-    // Usuario/Contraseña
     $('btn-login-pwd').addEventListener('click', async ()=>{
       const mail=($('email-pwd').value||'').trim();
       const pass=($('pass-pwd').value||'').trim();
@@ -253,10 +241,8 @@
       refreshAuthUI();
     });
 
-    // Callbacks de Auth (magic link + recovery)
     async function handleAuthRedirect(){
       const href = window.location.href;
-      // Intercambio de enlace mágico
       const hasCode = href.includes('code=') || href.includes('access_token=');
       if (hasCode){
         try{
@@ -266,14 +252,9 @@
           window.history.replaceState({}, document.title, REDIRECT_URL);
         }
       }
-      // Flujo de recuperación de contraseña
       const isRecovery = href.includes('type=recovery');
-      if (isRecovery){
-        showModal('modal-reset', true);
-      }
+      if (isRecovery){ showModal('modal-reset', true); }
     }
-
-    // Modal reset password
     $('btn-cancel-reset').addEventListener('click', ()=> showModal('modal-reset', false));
     $('btn-do-reset').addEventListener('click', async ()=>{
       const np = ($('new-pass').value||'').trim();
@@ -281,44 +262,42 @@
       setResetMsg('Actualizando contraseña...','info');
       const { error } = await supa.auth.updateUser({ password: np });
       if (error) setResetMsg('Error al actualizar: ' + error.message, 'err');
-      else {
-        setResetMsg('Contraseña actualizada. Puedes cerrar este cuadro.','ok');
-        setTimeout(()=> showModal('modal-reset', false), 1000);
-        refreshAuthUI();
-      }
+      else { setResetMsg('Contraseña actualizada','ok'); setTimeout(()=>showModal('modal-reset',false),1000); refreshAuthUI(); }
     });
 
-    // ======= Negocio horas (L–V, 07:30–19:00) =======
+    // === Lógica de horas por FECHA ===
     const TARGET_MIN = Math.round(37.5 * 60);
     const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
     const WORK_START = 7*60 + 30; // 07:30
     const WORK_END   = 19*60;     // 19:00
     const rowsEl = $('rows');
+    const selYear = $('sel-year'), selMonth=$('sel-month'), selWeek=$('sel-week'), wkLabel=$('wklabel');
+
     const pad = (n,w=2)=>String(n).padStart(w,'0');
     const fmtHM = m => { const sign=m<0?'-':''; m=Math.abs(m); const h=Math.floor(m/60),mm=m%60; return `${sign}${h} h ${pad(mm)}`; };
     const parseTime = s => { if(!s) return null; const [hh,mm]=s.split(':').map(Number); return (Number.isInteger(hh)&&Number.isInteger(mm)&&hh>=0&&hh<24&&mm>=0&&mm<60)?hh*60+mm:null; };
     const toMidnight = d => { const x=new Date(d); x.setHours(0,0,0,0); return x; };
-    const addDays = (d,n)=>{ const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+    const addDays=(d,n)=>{ const x=new Date(d); x.setDate(x.getDate()+n); return x; };
     function isoWeekYear(d){ const date=toMidnight(d); date.setDate(date.getDate()+3-((date.getDay()+6)%7)); return date.getFullYear(); }
     function isoWeekNumber(d){ const date=toMidnight(d); const th=new Date(date); th.setDate(th.getDate()+3-((th.getDay()+6)%7)); const first=new Date(th.getFullYear(),0,4); const diff=(th-first)/86400000; return 1+Math.floor(diff/7); }
     function isoWeekKey(d){ return `${isoWeekYear(d)}-W${pad(isoWeekNumber(d))}`; }
     function weeksOfMonth(year, monthIdx){ const res=[]; const first=new Date(year,monthIdx,1), last=new Date(year,monthIdx+1,0); let d=new Date(first); while(d.getDay()!==1) d=addDays(d,1); while(d<=last){ res.push(toMidnight(d)); d=addDays(d,7); } return res; }
+    const fmtDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 
-    const STORAGE_KEY = 'horas375_weeks_v1';
-    const loadDB = () => { try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); }catch{ return {}; } };
-    const saveDB = (db) => localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-    function ensureWeekLocal(db, key){ if(!db[key]){ const days={}; DIAS.forEach(d=>days[d]={e:'',s:''}); db[key]={days}; } return db[key]; }
+    let currentMonday;        // Date (lunes visible)
+    let weekDates = [];       // 5 fechas (L–V)
+    const state = [];         // [{dia, dateKey, e, s, total}]
+    const ui = [];            // referencias de inputs
 
-    const selYear = $('sel-year');
-    const selMonth = $('sel-month');
-    const selWeek = $('sel-week');
-    const wkLabel = $('wklabel');
+    function getMonday(d){
+      const off=(d.getDay()+6)%7; const x=new Date(d); x.setDate(x.getDate()-off); x.setHours(0,0,0,0); return x;
+    }
 
-    let currentMonday;
-    const state = DIAS.map(d => ({ dia:d, e:'', s:'', total:0 }));
-    const ui = [];
+    function buildWeekDates(mon){
+      weekDates = Array.from({length:5},(_,i)=> addDays(new Date(mon), i));
+    }
 
-    function overlapMins(start, end, winStart=WORK_START, winEnd=WORK_END){
+    function overlapMins(start,end,winStart=WORK_START,winEnd=WORK_END){
       if (start==null || end==null) return null;
       if (end < start) end += 24*60;
       const a = Math.max(start, winStart);
@@ -328,60 +307,113 @@
 
     function makeRow(i){
       const r = state[i];
-      const row = document.createElement('div'); row.className='grid row';
-      const d = document.createElement('div'); d.innerHTML = `<label>${r.dia}</label><div style="font-weight:700">${r.dia}</div>`;
-      const eIn = document.createElement('input'); eIn.type='time'; eIn.placeholder='HH:MM'; eIn.value=r.e;
-      const eOut= document.createElement('input'); eOut.type='time'; eOut.placeholder='HH:MM'; eOut.value=r.s;
-      const td  = document.createElement('div'); td.className='totdia'; td.textContent='—';
-      eIn.addEventListener('input', ()=>{ r.e=eIn.value; onChangeTimes(); });
-      eOut.addEventListener('input', ()=>{ r.s=eOut.value; onChangeTimes(); });
-      row.appendChild(d); const c1=document.createElement('div'); c1.appendChild(eIn); row.appendChild(c1);
-      const c2=document.createElement('div'); c2.appendChild(eOut); row.appendChild(c2); row.appendChild(td);
-      rowsEl.appendChild(row); ui[i] = { td, eIn, eOut };
+      const row=document.createElement('div'); row.className='grid row';
+      const label=document.createElement('div');
+      label.innerHTML = `<div style="font-weight:700">${r.dia} · ${r.dateKey}</div><label>Fecha</label>`;
+      const eIn=document.createElement('input'); eIn.type='time'; eIn.value=r.e||'';
+      const eOut=document.createElement('input'); eOut.type='time'; eOut.value=r.s||'';
+      const td=document.createElement('div'); td.className='totdia'; td.textContent=r.total?fmtHM(r.total):'—';
+      eIn.addEventListener('input', ()=>{ r.e=eIn.value; onChangeDay(r); });
+      eOut.addEventListener('input', ()=>{ r.s=eOut.value; onChangeDay(r); });
+      row.appendChild(label); row.appendChild(eIn); row.appendChild(eOut); row.appendChild(td);
+      rowsEl.appendChild(row); ui[i]={td,eIn,eOut};
     }
-    function buildRows(){ rowsEl.innerHTML=''; for(let i=0;i<DIAS.length;i++) makeRow(i); }
 
-    function recalcAndRenderTotals(){
-      let sum = 0;
+    function rebuildRows(){
+      rowsEl.innerHTML=''; ui.length=0;
+      for(let i=0;i<state.length;i++) makeRow(i);
+    }
+
+    function recalcWeekTotals(){
+      let sum=0;
       for (let i=0;i<state.length;i++){
-        const mins = overlapMins(parseTime(state[i].e), parseTime(state[i].s));
-        if (mins==null){ state[i].total=0; ui[i].td.textContent='—'; }
-        else { state[i].total=mins; ui[i].td.textContent=fmtHM(mins); sum+=mins; }
+        const mins=overlapMins(parseTime(state[i].e), parseTime(state[i].s));
+        state[i].total = mins || 0;
+        ui[i].td.textContent = mins==null ? '—' : fmtHM(mins);
+        sum += mins || 0;
       }
-      document.getElementById('total-semana').textContent = fmtHM(sum);
+      $('total-semana').textContent = fmtHM(sum);
       const rest = TARGET_MIN - sum;
-      document.getElementById('faltan').textContent = fmtHM(rest);
-      const k = document.getElementById('kpi-faltan'); k.classList.remove('ok','warn','err');
+      $('faltan').textContent = fmtHM(rest);
+      const k = $('kpi-faltan'); k.classList.remove('ok','warn','err');
       if (rest===0) k.classList.add('ok'); else if (rest>0) k.classList.add('warn'); else k.classList.add('err');
-      wkLabel.textContent = isoWeekKey(currentMonday);
+      $('wklabel').textContent = isoWeekKey(currentMonday);
     }
 
-    // Guardado local + nube (si logueado) con debounce
-    let saveTimer=null;
-    function onChangeTimes(){
-      // Local
-      const db=loadDB(); const key=isoWeekKey(currentMonday); const w=ensureWeekLocal(db,key);
-      for (const r of state){ w.days[r.dia]={ e:r.e||'', s:r.s||'' }; }
-      saveDB(db);
-      recalcAndRenderTotals();
-      // Nube
-      clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud, 500);
-    }
+    // Local storage por FECHA
+    const STORAGE_KEY = 'horas375_by_date_v1';
+    const loadLocal = () => { try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); }catch{ return {}; } };
+    const saveLocal = (db) => localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
 
-    function loadWeekLocalIntoState(mon){
-      currentMonday = toMidnight(mon);
-      const db=loadDB(); const key=isoWeekKey(currentMonday); const w=ensureWeekLocal(db,key);
-      for (let i=0;i<state.length;i++){
-        const d = state[i].dia; state[i].e = w.days[d].e||''; state[i].s = w.days[d].s||'';
-        ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s;
+    function fillStateFromLocal(){
+      const db=loadLocal();
+      for(const r of state){
+        const rec = db[r.dateKey] || {e:'',s:''};
+        r.e = rec.e || ''; r.s = rec.s || '';
       }
-      saveDB(db);
-      recalcAndRenderTotals();
+    }
+    function saveDayLocal(r){
+      const db=loadLocal();
+      db[r.dateKey] = { e:r.e||'', s:r.s||'' };
+      saveLocal(db);
+    }
+
+    // Guardado nube (por fecha)
+    let saveTimer=null;
+    async function onChangeDay(r){
+      // local
+      saveDayLocal(r);
+      // recomputa
+      recalcWeekTotals();
+      // nube (debounce)
+      clearTimeout(saveTimer);
+      saveTimer=setTimeout(saveWeekToCloud, 400);
+    }
+
+    async function saveWeekToCloud(){
+      const { data:{ user } } = await supa.auth.getUser();
+      if (!user) return;
+      // upsert de los 5 días visibles
+      const payload = state.map(r=>({
+        user_id: user.id,
+        work_date: r.dateKey,
+        e: r.e || '',
+        s: r.s || '',
+        minutes: overlapMins(parseTime(r.e), parseTime(r.s)) || 0
+      }));
+      const { error } = await supa.from('work_days').upsert(payload, { onConflict: 'user_id,work_date' });
+      if (error) console.error('Supabase upsert error', error);
+    }
+
+    async function loadWeekFromCloud(){
+      const { data:{ user } } = await supa.auth.getUser();
+      if (!user) return;
+      const from = fmtDate(weekDates[0]), to = fmtDate(weekDates[4]);
+      const { data, error } = await supa
+        .from('work_days')
+        .select('work_date,e,s,minutes')
+        .eq('user_id', user.id)
+        .gte('work_date', from)
+        .lte('work_date', to);
+      if (error){ console.error(error); return; }
+      if (data && data.length){
+        const byDate = Object.fromEntries(data.map(d=>[d.work_date, d]));
+        for (const r of state){
+          if (byDate[r.dateKey]){
+            r.e = byDate[r.dateKey].e || '';
+            r.s = byDate[r.dateKey].s || '';
+          }
+        }
+        // refleja en inputs
+        for(let i=0;i<state.length;i++){ ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s; }
+        recalcWeekTotals();
+      }
     }
 
     function populateYearMonth(){
       const now = new Date(); const thisYear = now.getFullYear();
-      const years=[thisYear-1,thisYear,thisYear+1]; selYear.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join(''); selYear.value=thisYear;
+      const years=[thisYear-1,thisYear,thisYear+1];
+      selYear.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join(''); selYear.value=thisYear;
       const months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
       selMonth.innerHTML=months.map((m,i)=>`<option value="${i}">${m}</option>`).join(''); selMonth.value=now.getMonth();
     }
@@ -393,93 +425,119 @@
         const label = `Sem ${wk} · ${pad(d.getDate())}/${pad(d.getMonth()+1)}–${pad(end.getDate())}/${pad(end.getMonth()+1)}`;
         return `<option value="${d.toISOString()}">${label}</option>`;
       }).join('');
-      const today=new Date(), todaysMonday=addDays(today,-((today.getDay()+6)%7));
+      const today=new Date(), todaysMonday=getMonday(today);
       const match = weeks.find(w=>w.getTime()===toMidnight(todaysMonday).getTime());
       selWeek.value=(match?match:weeks[0]).toISOString();
+    }
+
+    function rebuildStateForMonday(mon){
+      currentMonday = toMidnight(mon);
+      buildWeekDates(currentMonday);
+      // reconstruye state con fechas reales (L–V)
+      state.length=0;
+      for(let i=0;i<5;i++){
+        state.push({
+          dia: DIAS[i],
+          dateKey: fmtDate(weekDates[i]),
+          e:'', s:'', total:0
+        });
+      }
+      rebuildRows();
+      // carga local
+      fillStateFromLocal();
+      // pinta totales
+      recalcWeekTotals();
+    }
+
+    function loadWeek(isoStr){
+      rebuildStateForMonday(new Date(isoStr));
+      // intenta nube
+      loadWeekFromCloud();
     }
 
     selYear.addEventListener('change', ()=>{ populateWeeksForMonth(); loadWeek(selWeek.value); });
     selMonth.addEventListener('change', ()=>{ populateWeeksForMonth(); loadWeek(selWeek.value); });
     selWeek.addEventListener('change', ()=>{ loadWeek(selWeek.value); });
 
-    document.getElementById('btn-prev').addEventListener('click', ()=>{
+    $('btn-prev').addEventListener('click', ()=>{
       const prev=addDays(currentMonday,-7);
       selYear.value=prev.getFullYear(); selMonth.value=prev.getMonth(); populateWeeksForMonth();
       const iso=prev.toISOString(); const opt=[...selWeek.options].find(o=>o.value===iso);
       selWeek.value=(opt?iso:selWeek.options[0].value); loadWeek(selWeek.value);
     });
-    document.getElementById('btn-next').addEventListener('click', ()=>{
+    $('btn-next').addEventListener('click', ()=>{
       const next=addDays(currentMonday,7);
       selYear.value=next.getFullYear(); selMonth.value=next.getMonth(); populateWeeksForMonth();
       const opts=[...selWeek.options]; const iso=next.toISOString(); const found=opts.find(o=>o.value===iso);
       selWeek.value=(found?iso:opts[opts.length-1].value); loadWeek(selWeek.value);
     });
 
-    // ======= Supabase: guardar/leer semana por usuario =======
-    function serializeWeekData(){ const days={}; for(const r of state) days[r.dia]={e:r.e||'', s:r.s||''}; return days; }
-    async function saveWeekToCloud(){
-      const { data:{ user } } = await supa.auth.getUser();
-      if (!user) return;
-      const key=isoWeekKey(currentMonday);
-      const payload={ user_id: user.id, week_key: key, data: serializeWeekData() };
-      const { error } = await supa.from('weeks').upsert(payload, { onConflict: 'user_id,week_key' });
-      if (error) console.error('Supabase upsert error', error);
-    }
-    async function loadWeekFromCloud(){
-      const { data:{ user } } = await supa.auth.getUser();
-      if (!user) return;
-      const key=isoWeekKey(currentMonday);
-      const { data, error } = await supa.from('weeks').select('data').eq('user_id', user.id).eq('week_key', key).maybeSingle();
-      if (error) { console.error('Supabase select error', error); return; }
-      if (data && data.data){
-        for(let i=0;i<state.length;i++){
-          const d=state[i].dia; state[i].e=data.data[d]?.e||''; state[i].s=data.data[d]?.s||'';
-          ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s;
-        }
-        recalcAndRenderTotals();
-      }
-    }
-
-    // ======= CSV =======
+    // CSV export/import ahora por fecha
     function toCSV(){
-      const header = ['Día','Entrada','Salida','Total_día'];
+      const header=['Fecha','Día','Entrada','Salida','Total_día'];
       const lines=[header.join(',')];
-      for (const r of state) lines.push([r.dia, r.e, r.s, fmtHM(r.total)].join(','));
-      const total=document.getElementById('total-semana').textContent;
-      const faltan=document.getElementById('faltan').textContent;
+      for(const r of state) lines.push([r.dateKey, r.dia, r.e, r.s, fmtHM(r.total)].join(','));
+      const total=$('total-semana').textContent;
+      const faltan=$('faltan').textContent;
       lines.push(''); lines.push(['Semana', isoWeekKey(currentMonday)].join(',')); lines.push(['Total semana', total].join(',')); lines.push(['Faltan/Exceso vs 37,5h', faltan].join(','));
       return lines.join('\n');
     }
-    document.getElementById('btn-exportar').addEventListener('click', ()=>{
+    $('btn-exportar').addEventListener('click', ()=>{
       const blob=new Blob([toCSV()], {type:'text/csv;charset=utf-8;'});
       const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`horas_${isoWeekKey(currentMonday)}.csv`; a.click(); URL.revokeObjectURL(a.href);
     });
-    document.getElementById('btn-importar').addEventListener('click', ()=> document.getElementById('importar').click());
-    document.getElementById('importar').addEventListener('change', async (e)=>{
+    $('btn-importar').addEventListener('click', ()=> $('importar').click());
+    $('importar').addEventListener('change', async (e)=>{
       const file=e.target.files[0]; if(!file) return; const text=await file.text();
       const lines=text.split(/\r?\n/).filter(Boolean);
-      const data=lines.slice(1).filter(l=>!l.startsWith('Total semana') && !l.startsWith('Faltan/Exceso') && !l.startsWith('Semana'));
-      const db=loadDB(); const key=isoWeekKey(currentMonday); const w=ensureWeekLocal(db,key);
-      let idx=0; for (const line of data){ const p=line.split(','); if(p.length<4) continue; if(idx>=state.length) break; w.days[DIAS[idx]]={ e:p[1]||'', s:p[2]||'' }; idx++; }
-      saveDB(db); loadWeekLocalIntoState(currentMonday); e.target.value='';
+      const data=lines.slice(1).filter(l=>!l.startsWith('Semana') && !l.startsWith('Total semana') && !l.startsWith('Faltan/Exceso'));
+      // Espera: CSV en formato Fecha,Día,Entrada,Salida,Total_día
+      const mapByDate = {};
+      for (const line of data){
+        const p=line.split(','); if(p.length<5) continue;
+        const dateKey=p[0]; const e=p[2]||''; const s=p[3]||'';
+        mapByDate[dateKey]={e,s};
+      }
+      for (const r of state){
+        if (mapByDate[r.dateKey]){
+          r.e = mapByDate[r.dateKey].e; r.s = mapByDate[r.dateKey].s;
+          saveDayLocal(r);
+        }
+      }
+      // refresca inputs
+      for(let i=0;i<state.length;i++){ ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s; }
+      recalcWeekTotals();
+      e.target.value='';
       saveWeekToCloud();
     });
 
-    // ======= Init =======
+    // Init
     document.addEventListener('DOMContentLoaded', async ()=>{
-      // horas UI
-      buildRows();
+      // construir selects
       const now=new Date();
-      populateYearMonth();
-      (function initWeeks(){
-        const thisYear=now.getFullYear(); selYear.value=thisYear;
+      (function initYM(){
+        const thisYear=now.getFullYear();
+        selYear.innerHTML=[thisYear-1,thisYear,thisYear+1].map(y=>`<option value="${y}">${y}</option>`).join('');
+        selYear.value=thisYear;
+        const months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        selMonth.innerHTML=months.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
         selMonth.value=now.getMonth();
-        populateWeeksForMonth();
       })();
-      const monday = (d=>{ const off=(d.getDay()+6)%7; d=new Date(d); d.setDate(d.getDate()-off); d.setHours(0,0,0,0); return d; })(new Date());
-      loadWeekLocalIntoState(monday);
-
-      // auth callbacks + estado
+      (function initWeeks(){
+        const y=parseInt(selYear.value,10), m=parseInt(selMonth.value,10);
+        const weeks=weeksOfMonth(y,m);
+        selWeek.innerHTML = weeks.map(d=>{
+          const end=addDays(d,6); const wk=isoWeekKey(d).split('W')[1];
+          const label=`Sem ${wk} · ${pad(d.getDate())}/${pad(d.getMonth()+1)}–${pad(end.getDate())}/${pad(end.getMonth()+1)}`;
+          return `<option value="${d.toISOString()}">${label}</option>`;
+        }).join('');
+        const today=getMonday(new Date());
+        const match=weeks.find(w=>w.getTime()===today.getTime());
+        selWeek.value=(match?match:weeks[0]).toISOString();
+      })();
+      // estado semana
+      rebuildStateForMonday(new Date(selWeek.value));
+      // auth callbacks y estado
       await handleAuthRedirect();
       await refreshAuthUI();
     });
