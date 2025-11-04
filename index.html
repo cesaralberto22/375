@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Horas 37,5 · Semanas</title>
-  <meta name="description" content="Calculadora de horas L–V con tope 07:30–19:00, guardado por semanas ISO, navegación por meses y exportación CSV." />
+  <title>Horas 37,5 · Semanas (con usuarios)</title>
+  <meta name="description" content="Calculadora de horas L–V con tope 07:30–19:00, guardado por usuario y semana ISO en Supabase, navegación Año→Mes→Semana y CSV." />
   <style>
     :root{--bg:#0b1220;--card:#0f172a;--muted:#94a3b8;--fg:#e2e8f0;--acc:#0ea5e9;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444}
     *{box-sizing:border-box}
@@ -16,7 +16,7 @@
     header{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
     .flag{width:28px;height:20px;border-radius:3px;display:inline-block}
     .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-    select, button{padding:9px 12px;border-radius:10px;border:1px solid #1f2937;background:#0b1220;color:var(--fg);font-weight:600}
+    select, button, input[type=email]{padding:9px 12px;border-radius:10px;border:1px solid #1f2937;background:#0b1220;color:var(--fg);font-weight:600}
     button.primary{background:linear-gradient(180deg,#0ea5e9,#0284c7);color:white;border:1px solid #0b83b7}
     .grid{display:grid;grid-template-columns:140px 1fr 1fr 160px;gap:8px;align-items:center;margin-top:10px}
     .head{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
@@ -45,7 +45,6 @@
             <span class="flag" title="Asturias">
               <svg viewBox="0 0 160 110" width="28" height="20" style="display:block;border-radius:3px">
                 <rect width="160" height="110" fill="#1f8dd6"/>
-                <!-- Cruz de la Victoria simplificada -->
                 <g fill="#ffd700">
                   <rect x="72" y="20" width="16" height="70"/>
                   <rect x="35" y="54" width="90" height="15"/>
@@ -55,8 +54,17 @@
             </span>
             Horas 37,5 · Semanas
           </h1>
-          <div class="sub">L–V, cuenta solo entre <strong>07:30–19:00</strong>. Guardado por semana ISO. Navegación por meses.</div>
+          <div class="sub">L–V. Cuenta solo <strong>07:30–19:00</strong>. Guardado por <strong>usuario</strong> y <strong>semana ISO</strong>. Navegación por meses.</div>
         </div>
+
+        <!-- AUTENTICACIÓN -->
+        <div id="auth" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px">
+          <input id="email" type="email" placeholder="tu@correo.com" />
+          <button id="btn-login" class="primary">Entrar (magic link)</button>
+          <button id="btn-logout" style="display:none;">Salir</button>
+          <span id="whoami" style="color:#94a3b8;"></span>
+        </div>
+
         <div class="controls">
           <select id="sel-year" title="Año"></select>
           <select id="sel-month" title="Mes"></select>
@@ -91,119 +99,60 @@
         <button class="secondary" id="btn-importar">Cargar semana (CSV)</button>
         <button id="btn-exportar">Guardar semana (CSV)</button>
       </div>
-      <div class="hint">Los datos se guardan en tu navegador por <strong>semana ISO</strong>. Cambia de semana con los selectores de arriba.</div>
+      <div class="hint">
+        Si no inicias sesión se guarda localmente por semana. Con sesión, se guarda en la nube y podrás verlo desde cualquier dispositivo.
+      </div>
     </div>
   </div>
 
+  <!-- Supabase SDK -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
   <script>
-    // ====== Utilidades de fechas y semanas ISO ======
+    // ======= Supabase (tus credenciales) =======
+    const SUPABASE_URL  = "https://izkwmbtyzvdiwfvenzbb.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6a3dtYnR5enZkaXdmdmVuemJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzU1ODEsImV4cCI6MjA3NzgxMTU4MX0.jrJNclTJO3uy5WP6q5i01aQbiryQuTWGE1KIUyowAhw";
+    const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    let currentUser = null;
+
+    // --------- Parámetros negocio ---------
     const TARGET_MIN = Math.round(37.5 * 60);
     const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
-    const WORK_START = 7*60 + 30;  // 07:30 => 450
-    const WORK_END   = 19*60;      // 19:00 => 1140
+    const WORK_START = 7*60 + 30;  // 07:30
+    const WORK_END   = 19*60;      // 19:00
 
+    // --------- Utilidades tiempo/semana ---------
     const pad = (n, w=2) => String(n).padStart(w,'0');
+    const fmtHM = m => { const sign = m<0?'-':''; m=Math.abs(m); const h=Math.floor(m/60), mm=m%60; return `${sign}${h} h ${pad(mm)}`; };
+    const parseTime = s => { if (!s) return null; const [hh,mm]=s.split(':').map(Number); return (Number.isInteger(hh)&&Number.isInteger(mm)&&hh>=0&&hh<24&&mm>=0&&mm<60) ? hh*60+mm : null; };
+    const toMidnight = d => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
+    const addDays = (d,n)=>{ const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+    function isoWeekYear(d){ const date=toMidnight(d); date.setDate(date.getDate()+3-((date.getDay()+6)%7)); return date.getFullYear(); }
+    function isoWeekNumber(d){ const date=toMidnight(d); const th=new Date(date); th.setDate(th.getDate()+3-((th.getDay()+6)%7)); const first=new Date(th.getFullYear(),0,4); const diff=(th-first)/86400000; return 1+Math.floor(diff/7); }
+    function isoWeekKey(d){ return `${isoWeekYear(d)}-W${pad(isoWeekNumber(d))}`; }
+    function weeksOfMonth(year, monthIdx){ const res=[]; const first=new Date(year,monthIdx,1), last=new Date(year,monthIdx+1,0); let d=new Date(first); while(d.getDay()!==1) d=addDays(d,1); while(d<=last){ res.push(toMidnight(d)); d=addDays(d,7); } return res; }
 
-    function toMidnight(d){ const x = new Date(d); x.setHours(0,0,0,0); return x; }
-    function addDays(d, n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
-
-    // ISO week: Monday = day 1. From https://en.wikipedia.org/wiki/ISO_week_date (simple JS impl)
-    function isoWeekYear(d){
-      const date = toMidnight(d);
-      date.setDate(date.getDate() + 3 - ((date.getDay()+6)%7));
-      return date.getFullYear();
-    }
-    function isoWeekNumber(d){
-      const date = toMidnight(d);
-      const thursday = new Date(date.getTime());
-      thursday.setDate(thursday.getDate() + 3 - ((thursday.getDay()+6)%7));
-      const firstThursday = new Date(thursday.getFullYear(),0,4);
-      const diff = (thursday - firstThursday) / 86400000;
-      return 1 + Math.floor(diff/7);
-    }
-    function isoWeekKey(d){
-      const y = isoWeekYear(d); const w = isoWeekNumber(d);
-      return `${y}-W${pad(w)}`;
-    }
-    function mondayOfISOWeek(y, w){
-      const simple = new Date(y,0,4);
-      const dow = (simple.getDay()+6)%7; // 0..6 Monday-based
-      const monday = addDays(simple, -dow + (w-1)*7);
-      return toMidnight(monday);
-    }
-
-    // Lista de semanas (lunes) cuyo lunes cae en el mes dado
-    function weeksOfMonth(year, monthIndex){ // monthIndex 0..11
-      const res = [];
-      const first = new Date(year, monthIndex, 1);
-      const last = new Date(year, monthIndex+1, 0);
-      // Buscar el primer lunes del mes
-      let d = new Date(first);
-      while (d.getDay() !== 1) d = addDays(d,1); // 1 = Monday
-      while (d <= last){
-        res.push(toMidnight(d));
-        d = addDays(d, 7);
-      }
-      return res;
-    }
-
-    // ====== Formatos ======
-    const fmtHM = m => {
-      const sign = m < 0 ? '-' : '';
-      m = Math.abs(m);
-      const h = Math.floor(m/60), mm = m%60; return `${sign}${h} h ${pad(mm)}`;
-    };
-    const parseTime = s => {
-      if (!s) return null; const [hh,mm] = s.split(':').map(Number);
-      if (Number.isInteger(hh) && Number.isInteger(mm) && hh>=0 && hh<24 && mm>=0 && mm<60) return hh*60+mm;
-      return null;
-    };
-
-    // ====== Persistencia ======
+    // --------- Persistencia local (fallback) ---------
     const STORAGE_KEY = 'horas375_weeks_v1';
     const loadDB = () => { try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); }catch{ return {}; } };
     const saveDB = (db) => localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+    function ensureWeekLocal(db, key){ if(!db[key]){ const days={}; DIAS.forEach(d=>days[d]={e:'',s:''}); db[key]={days}; } return db[key]; }
 
-    // Estructura por semana: { days: { Lunes:{e:'',s:''}, ... } }
-    function ensureWeek(db, key){
-      if (!db[key]){
-        const days = {}; DIAS.forEach(d=>days[d] = {e:'', s:''});
-        db[key] = { days };
-      }
-      return db[key];
-    }
-
-    // ====== Estado UI ======
+    // --------- Estado UI ---------
     const rowsEl = document.getElementById('rows');
     const selYear = document.getElementById('sel-year');
     const selMonth = document.getElementById('sel-month');
     const selWeek = document.getElementById('sel-week');
     const wkLabel = document.getElementById('wklabel');
+    const who = document.getElementById('whoami');
+    const email = document.getElementById('email');
+    const btnLogin = document.getElementById('btn-login');
+    const btnLogout = document.getElementById('btn-logout');
 
-    let currentMonday; // Date del lunes de la semana visible
-
-    // Construye filas de días
+    let currentMonday; // Lunes de la semana visible
     const state = DIAS.map(d => ({ dia:d, e:'', s:'', total:0 }));
     const ui = [];
 
-    function makeRow(idx){
-      const r = state[idx];
-      const row = document.createElement('div'); row.className='grid row';
-      const d = document.createElement('div'); d.innerHTML = `<label>${r.dia}</label><div style="font-weight:700">${r.dia}</div>`;
-      const eIn = document.createElement('input'); eIn.type='time'; eIn.placeholder='HH:MM'; eIn.value=r.e;
-      const eOut = document.createElement('input'); eOut.type='time'; eOut.placeholder='HH:MM'; eOut.value=r.s;
-      const td = document.createElement('div'); td.className='totdia'; td.textContent='—';
-      eIn.addEventListener('input', ()=>{ r.e=eIn.value; onChangeTimes(); });
-      eOut.addEventListener('input', ()=>{ r.s=eOut.value; onChangeTimes(); });
-      row.appendChild(d); const c1=document.createElement('div'); c1.appendChild(eIn); row.appendChild(c1);
-      const c2=document.createElement('div'); c2.appendChild(eOut); row.appendChild(c2); row.appendChild(td);
-      rowsEl.appendChild(row);
-      ui[idx] = { td, eIn, eOut };
-    }
-
-    function buildRows(){ rowsEl.innerHTML=''; for(let i=0;i<DIAS.length;i++) makeRow(i); }
-
-    // Cálculo con tope horario 07:30–19:00
     function overlapMins(start, end, winStart=WORK_START, winEnd=WORK_END){
       if (start==null || end==null) return null;
       if (end < start) end += 24*60; // cruce medianoche
@@ -212,129 +161,178 @@
       return Math.max(0, b - a);
     }
 
+    function makeRow(i){
+      const r = state[i];
+      const row = document.createElement('div'); row.className='grid row';
+      const d = document.createElement('div'); d.innerHTML = `<label>${r.dia}</label><div style="font-weight:700">${r.dia}</div>`;
+      const eIn = document.createElement('input'); eIn.type='time'; eIn.placeholder='HH:MM'; eIn.value=r.e;
+      const eOut= document.createElement('input'); eOut.type='time'; eOut.placeholder='HH:MM'; eOut.value=r.s;
+      const td  = document.createElement('div'); td.className='totdia'; td.textContent='—';
+      eIn.addEventListener('input', ()=>{ r.e=eIn.value; onChangeTimes(); });
+      eOut.addEventListener('input', ()=>{ r.s=eOut.value; onChangeTimes(); });
+      row.appendChild(d); const c1=document.createElement('div'); c1.appendChild(eIn); row.appendChild(c1);
+      const c2=document.createElement('div'); c2.appendChild(eOut); row.appendChild(c2); row.appendChild(td);
+      rowsEl.appendChild(row); ui[i] = { td, eIn, eOut };
+    }
+    function buildRows(){ rowsEl.innerHTML=''; for(let i=0;i<DIAS.length;i++) makeRow(i); }
+
     function recalcAndRenderTotals(){
       let sum = 0;
       for (let i=0;i<state.length;i++){
-        const e = parseTime(state[i].e), s = parseTime(state[i].s);
-        const mins = overlapMins(e, s);
-        if (mins==null){ state[i].total = 0; ui[i].td.textContent='—'; }
-        else { state[i].total = mins; ui[i].td.textContent = fmtHM(mins); sum += mins; }
+        const mins = overlapMins(parseTime(state[i].e), parseTime(state[i].s));
+        if (mins==null){ state[i].total=0; ui[i].td.textContent='—'; }
+        else { state[i].total=mins; ui[i].td.textContent=fmtHM(mins); sum+=mins; }
       }
       document.getElementById('total-semana').textContent = fmtHM(sum);
-      const rest = TARGET_MIN - sum; document.getElementById('faltan').textContent = fmtHM(rest);
+      const rest = TARGET_MIN - sum;
+      document.getElementById('faltan').textContent = fmtHM(rest);
       const k = document.getElementById('kpi-faltan'); k.classList.remove('ok','warn','err');
       if (rest===0) k.classList.add('ok'); else if (rest>0) k.classList.add('warn'); else k.classList.add('err');
       wkLabel.textContent = isoWeekKey(currentMonday);
     }
 
+    // Guardado local + nube (si logueado) con debounce
+    let saveTimer=null;
     function onChangeTimes(){
-      // Guardar en localStorage bajo la semana actual
-      const db = loadDB(); const key = isoWeekKey(currentMonday);
-      const week = ensureWeek(db, key);
+      // Local
+      const db=loadDB(); const key=isoWeekKey(currentMonday); const w=ensureWeekLocal(db,key);
+      for (const r of state){ w.days[r.dia]={ e:r.e||'', s:r.s||'' }; }
+      saveDB(db);
+      recalcAndRenderTotals();
+      // Nube
+      clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud, 500);
+    }
+
+    function loadWeekLocalIntoState(mon){
+      currentMonday = toMidnight(mon);
+      const db=loadDB(); const key=isoWeekKey(currentMonday); const w=ensureWeekLocal(db,key);
       for (let i=0;i<state.length;i++){
-        const d = state[i].dia; week.days[d].e = state[i].e; week.days[d].s = state[i].s;
+        const d = state[i].dia; state[i].e = w.days[d].e||''; state[i].s = w.days[d].s||'';
+        ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s;
       }
       saveDB(db);
       recalcAndRenderTotals();
     }
 
-    function loadWeekIntoState(monday){
-      currentMonday = toMidnight(monday);
-      const db = loadDB(); const key = isoWeekKey(currentMonday); const week = ensureWeek(db, key);
-      for (let i=0;i<state.length;i++){
-        const d = state[i].dia; state[i].e = week.days[d].e || ''; state[i].s = week.days[d].s || '';
-        ui[i].eIn.value = state[i].e; ui[i].eOut.value = state[i].s;
-      }
-      saveDB(db);
-      recalcAndRenderTotals();
-    }
-
-    // ====== Controles de Año/Mes/Semana ======
     function populateYearMonth(){
       const now = new Date(); const thisYear = now.getFullYear();
-      const years = [thisYear-1, thisYear, thisYear+1];
-      selYear.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
-      selYear.value = thisYear;
-      const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-      selMonth.innerHTML = months.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
-      selMonth.value = now.getMonth();
+      const years=[thisYear-1,thisYear,thisYear+1]; selYear.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join(''); selYear.value=thisYear;
+      const months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      selMonth.innerHTML=months.map((m,i)=>`<option value="${i}">${m}</option>`).join(''); selMonth.value=now.getMonth();
     }
-
     function populateWeeksForMonth(){
-      const y = parseInt(selYear.value,10); const m = parseInt(selMonth.value,10);
-      const weeks = weeksOfMonth(y,m);
-      if (weeks.length===0){ selWeek.innerHTML = '<option>(sin semanas)</option>'; return; }
+      const y=parseInt(selYear.value,10), m=parseInt(selMonth.value,10); const weeks=weeksOfMonth(y,m);
+      if (weeks.length===0){ selWeek.innerHTML='<option>(sin semanas)</option>'; return; }
       selWeek.innerHTML = weeks.map(d=>{
-        const key = isoWeekKey(d);
-        const end = addDays(d,6);
-        const label = `Sem ${key.split('W')[1]} · ${pad(d.getDate())}/${pad(d.getMonth()+1)}–${pad(end.getDate())}/${pad(end.getMonth()+1)}`;
+        const end = addDays(d,6); const wk=isoWeekKey(d).split('W')[1];
+        const label = `Sem ${wk} · ${pad(d.getDate())}/${pad(d.getMonth()+1)}–${pad(end.getDate())}/${pad(end.getMonth()+1)}`;
         return `<option value="${d.toISOString()}">${label}</option>`;
       }).join('');
-      // Seleccionar la semana que contenga el día actual si cae en el mes; si no, la primera
-      const today = new Date();
-      const todaysMonday = addDays(today, -((today.getDay()+6)%7));
-      const match = weeks.find(w => w.getTime()===toMidnight(todaysMonday).getTime());
-      selWeek.value = (match ? match : weeks[0]).toISOString();
+      const today=new Date(), todaysMonday=addDays(today,-((today.getDay()+6)%7));
+      const match = weeks.find(w=>w.getTime()===toMidnight(todaysMonday).getTime());
+      selWeek.value=(match?match:weeks[0]).toISOString();
     }
 
-    selYear.addEventListener('change', ()=>{ populateWeeksForMonth(); loadWeekIntoState(new Date(selWeek.value)); });
-    selMonth.addEventListener('change', ()=>{ populateWeeksForMonth(); loadWeekIntoState(new Date(selWeek.value)); });
-    selWeek.addEventListener('change', ()=>{ loadWeekIntoState(new Date(selWeek.value)); });
+    selYear.addEventListener('change', ()=>{ populateWeeksForMonth(); loadWeek(selWeek.value); });
+    selMonth.addEventListener('change', ()=>{ populateWeeksForMonth(); loadWeek(selWeek.value); });
+    selWeek.addEventListener('change', ()=>{ loadWeek(selWeek.value); });
 
     document.getElementById('btn-prev').addEventListener('click', ()=>{
-      const prev = addDays(currentMonday, -7); // Lunes anterior
-      // sincronizar selects
-      selYear.value = prev.getFullYear(); selMonth.value = prev.getMonth(); populateWeeksForMonth();
-      // elegir opción exacta si existe
-      const opts = [...selWeek.options];
-      const iso = prev.toISOString(); const found = opts.find(o=>o.value===iso);
-      selWeek.value = found ? iso : opts[0].value;
-      loadWeekIntoState(new Date(selWeek.value));
+      const prev=addDays(currentMonday,-7);
+      selYear.value=prev.getFullYear(); selMonth.value=prev.getMonth(); populateWeeksForMonth();
+      const iso=prev.toISOString(); const opt=[...selWeek.options].find(o=>o.value===iso);
+      selWeek.value=(opt?iso:selWeek.options[0].value); loadWeek(selWeek.value);
     });
     document.getElementById('btn-next').addEventListener('click', ()=>{
-      const next = addDays(currentMonday, 7);
-      selYear.value = next.getFullYear(); selMonth.value = next.getMonth(); populateWeeksForMonth();
-      const opts = [...selWeek.options]; const iso = next.toISOString(); const found = opts.find(o=>o.value===iso);
-      selWeek.value = found ? iso : opts[opts.length-1].value;
-      loadWeekIntoState(new Date(selWeek.value));
+      const next=addDays(currentMonday,7);
+      selYear.value=next.getFullYear(); selMonth.value=next.getMonth(); populateWeeksForMonth();
+      const opts=[...selWeek.options]; const iso=next.toISOString(); const found=opts.find(o=>o.value===iso);
+      selWeek.value=(found?iso:opts[opts.length-1].value); loadWeek(selWeek.value);
     });
 
-    // ====== CSV ======
-    function toCSV(){
-      const header = ['Día','Entrada','Salida','Total_día'];
-      const lines = [header.join(',')];
-      for (const r of state){ lines.push([r.dia, r.e, r.s, fmtHM(r.total)].join(',')); }
-      const total = document.getElementById('total-semana').textContent;
-      const faltan = document.getElementById('faltan').textContent;
-      lines.push('');
-      lines.push(['Semana', isoWeekKey(currentMonday)].join(','));
-      lines.push(['Total semana', total].join(','));
-      lines.push(['Faltan/Exceso vs 37,5h', faltan].join(','));
-      return lines.join('\n');
+    // --------- Supabase: auth + cloud storage ---------
+    async function refreshAuthUI(){
+      const { data:{ user } } = await supa.auth.getUser();
+      currentUser = user;
+      if (user){
+        who.textContent = `Sesión: ${user.email}`;
+        btnLogin.style.display='none'; email.style.display='none'; btnLogout.style.display='inline-block';
+        loadWeekFromCloud(); // intenta cargar versión nube de la semana visible
+      } else {
+        who.textContent = 'Sin sesión';
+        btnLogin.style.display='inline-block'; email.style.display='inline-block'; btnLogout.style.display='none';
+      }
+    }
+    btnLogin.addEventListener('click', async ()=>{
+      const mail=(email.value||'').trim(); if(!mail) { alert('Pon tu email'); return; }
+      const { error } = await supa.auth.signInWithOtp({ email: mail, options: { emailRedirectTo: window.location.href } });
+      if (error) alert(error.message); else alert('Te envié un enlace al email. Ábrelo para iniciar sesión.');
+    });
+    btnLogout.addEventListener('click', async ()=>{ await supa.auth.signOut(); currentUser=null; refreshAuthUI(); });
+
+    supa.auth.onAuthStateChange((_evt,_session)=>{ refreshAuthUI(); });
+
+    function serializeWeekData(){ const days={}; for(const r of state) days[r.dia]={e:r.e||'', s:r.s||''}; return days; }
+    async function saveWeekToCloud(){
+      if (!currentUser) return;
+      const key=isoWeekKey(currentMonday);
+      const payload={ user_id: currentUser.id, week_key: key, data: serializeWeekData() };
+      const { error } = await supa.from('weeks').upsert(payload, { onConflict: 'user_id,week_key' });
+      if (error) console.error('Supabase upsert error', error);
+    }
+    async function loadWeekFromCloud(){
+      if (!currentUser) return;
+      const key=isoWeekKey(currentMonday);
+      const { data, error } = await supa.from('weeks').select('data').eq('user_id', currentUser.id).eq('week_key', key).maybeSingle();
+      if (error) { console.error('Supabase select error', error); return; }
+      if (data && data.data){
+        for(let i=0;i<state.length;i++){
+          const d=state[i].dia; state[i].e=data.data[d]?.e||''; state[i].s=data.data[d]?.s||'';
+          ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s;
+        }
+        recalcAndRenderTotals();
+      }
     }
 
-    document.getElementById('btn-exportar').addEventListener('click', ()=>{
-      const blob = new Blob([toCSV()], {type:'text/csv;charset=utf-8;'});
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `horas_${isoWeekKey(currentMonday)}.csv`; a.click(); URL.revokeObjectURL(a.href);
-    });
+    function loadWeek(isoDateStr){
+      loadWeekLocalIntoState(new Date(isoDateStr));
+      loadWeekFromCloud();
+    }
 
+    // --------- CSV ---------
+    function toCSV(){
+      const header = ['Día','Entrada','Salida','Total_día'];
+      const lines=[header.join(',')];
+      for (const r of state) lines.push([r.dia, r.e, r.s, fmtHM(r.total)].join(','));
+      const total=document.getElementById('total-semana').textContent;
+      const faltan=document.getElementById('faltan').textContent;
+      lines.push(''); lines.push(['Semana', isoWeekKey(currentMonday)].join(',')); lines.push(['Total semana', total].join(',')); lines.push(['Faltan/Exceso vs 37,5h', faltan].join(','));
+      return lines.join('\n');
+    }
+    document.getElementById('btn-exportar').addEventListener('click', ()=>{
+      const blob=new Blob([toCSV()], {type:'text/csv;charset=utf-8;'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`horas_${isoWeekKey(currentMonday)}.csv`; a.click(); URL.revokeObjectURL(a.href);
+    });
     document.getElementById('btn-importar').addEventListener('click', ()=> document.getElementById('importar').click());
     document.getElementById('importar').addEventListener('change', async (e)=>{
-      const file = e.target.files[0]; if (!file) return; const text = await file.text();
-      const lines = text.split(/\r?\n/).filter(Boolean);
-      const data = lines.slice(1).filter(l=>!l.startsWith('Total semana') && !l.startsWith('Faltan/Exceso') && !l.startsWith('Semana'));
-      const db = loadDB(); const key = isoWeekKey(currentMonday); const week = ensureWeek(db, key);
-      let idx=0; for (const line of data){ const p = line.split(','); if (p.length<4) continue; if (idx>=state.length) break; week.days[DIAS[idx]].e=p[1]||''; week.days[DIAS[idx]].s=p[2]||''; idx++; }
-      saveDB(db); loadWeekIntoState(currentMonday);
-      e.target.value='';
+      const file=e.target.files[0]; if(!file) return; const text=await file.text();
+      const lines=text.split(/\r?\n/).filter(Boolean);
+      const data=lines.slice(1).filter(l=>!l.startsWith('Total semana') && !l.startsWith('Faltan/Exceso') && !l.startsWith('Semana'));
+      const db=loadDB(); const key=isoWeekKey(currentMonday); const w=ensureWeekLocal(db,key);
+      let idx=0; for (const line of data){ const p=line.split(','); if(p.length<4) continue; if(idx>=state.length) break; w.days[DIAS[idx]]={ e:p[1]||'', s:p[2]||'' }; idx++; }
+      saveDB(db); loadWeekLocalIntoState(currentMonday); e.target.value='';
+      saveWeekToCloud(); // intenta subir también
     });
 
-    // ====== Init ======
-    buildRows();
-    populateYearMonth();
-    populateWeeksForMonth();
-    // Semana actual por defecto
-    loadWeekIntoState(new Date(selWeek.value));
+    // --------- Init ---------
+    function init(){
+      buildRows();
+      populateYearMonth();
+      populateWeeksForMonth();
+      loadWeek(selWeek.value);
+      refreshAuthUI();
+    }
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
