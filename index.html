@@ -109,29 +109,28 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script>
-    // Credenciales Supabase (las tuyas)
+    // === Supabase (tus credenciales) ===
     const SUPABASE_URL  = "https://izkwmbtyzvdiwfvenzbb.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6a3dtYnR5enZkaXdmdmVuemJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzU1ODEsImV4cCI6MjA3NzgxMTU4MX0.jrJNclTJO3uy5WP6q5i01aQbiryQuTWGE1KIUyowAhw";
-    // Usamos automáticamente el dominio actual como redirect:
-    const REDIRECT_URL  = window.location.origin;
+    const REDIRECT_URL  = window.location.origin; // tu dominio actual
 
     const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
 
-    // ---- Utilidades UI de mensajes
+    // ---- UI mensajes
     const authMsg = document.getElementById('auth-msg');
     function setMsg(text, type='info'){ authMsg.textContent = text; authMsg.className = `msg ${type}`; }
 
     let currentUser = null;
 
-    // --------- Parámetros negocio ---------
+    // ---- Negocio
     const TARGET_MIN = Math.round(37.5 * 60);
     const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
     const WORK_START = 7*60 + 30;  // 07:30
     const WORK_END   = 19*60;      // 19:00
 
-    // --------- Utilidades tiempo/semana ---------
+    // ---- Utilidades tiempo/semana
     const pad = (n, w=2) => String(n).padStart(w,'0');
     const fmtHM = m => { const sign = m<0?'-':''; m=Math.abs(m); const h=Math.floor(m/60), mm=m%60; return `${sign}${h} h ${pad(mm)}`; };
     const parseTime = s => { if (!s) return null; const [hh,mm]=s.split(':').map(Number); return (Number.isInteger(hh)&&Number.isInteger(mm)&&hh>=0&&hh<24&&mm>=0&&mm<60) ? hh*60+mm : null; };
@@ -142,13 +141,13 @@
     function isoWeekKey(d){ return `${isoWeekYear(d)}-W${pad(isoWeekNumber(d))}`; }
     function weeksOfMonth(year, monthIdx){ const res=[]; const first=new Date(year,monthIdx,1), last=new Date(year,monthIdx+1,0); let d=new Date(first); while(d.getDay()!==1) d=addDays(d,1); while(d<=last){ res.push(toMidnight(d)); d=addDays(d,7); } return res; }
 
-    // --------- Persistencia local (fallback) ---------
+    // ---- Persistencia local
     const STORAGE_KEY = 'horas375_weeks_v1';
     const loadDB = () => { try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); }catch{ return {}; } };
     const saveDB = (db) => localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
     function ensureWeekLocal(db, key){ if(!db[key]){ const days={}; DIAS.forEach(d=>days[d]={e:'',s:''}); db[key]={days}; } return db[key]; }
 
-    // --------- Estado UI ---------
+    // ---- Estado/UI
     const rowsEl = document.getElementById('rows');
     const selYear = document.getElementById('sel-year');
     const selMonth = document.getElementById('sel-month');
@@ -257,10 +256,11 @@
       selWeek.value=(found?iso:opts[opts.length-1].value); loadWeek(selWeek.value);
     });
 
-    // --------- Supabase: auth + cloud storage ---------
+    // ---- Supabase: auth + nube
     async function refreshAuthUI(){
       const { data:{ user } } = await supa.auth.getUser();
       currentUser = user;
+      const who = document.getElementById('whoami');
       if (user){
         who.textContent = `Sesión: ${user.email}`;
         btnLogin.style.display='none'; email.style.display='none'; btnLogout.style.display='inline-block';
@@ -286,23 +286,26 @@
           setMsg('Fallo al verificar el enlace', 'err');
           console.error(e);
         }finally{
-          // Limpia la URL
           window.history.replaceState({}, document.title, REDIRECT_URL);
         }
       }
     }
 
+    // Login: NO convertimos a minúsculas el email que envías (respetamos MAYÚSCULAS del local-part)
     btnLogin.addEventListener('click', async ()=>{
-      const mail=(email.value||'').trim().toLowerCase();
-      if (!mail){ setMsg('Pon tu email', 'warn'); return; }
-      if (!mail.endsWith('@asturias.org')){ setMsg('Solo se permiten correos @asturias.org', 'err'); return; }
+      const raw = (email.value || '').trim(); // tal cual
+      if (!raw){ setMsg('Pon tu email', 'warn'); return; }
+      // Validamos solo el dominio, en minúsculas:
+      const domainOk = raw.toLowerCase().endsWith('@asturias.org');
+      if (!domainOk){ setMsg('Solo se permiten correos @asturias.org', 'err'); return; }
+
       setMsg('Enviando enlace de acceso...', 'info');
       const { error } = await supa.auth.signInWithOtp({
-        email: mail,
+        email: raw,
         options: { emailRedirectTo: REDIRECT_URL }
       });
       if (error) setMsg('Error enviando enlace: '+error.message, 'err');
-      else setMsg('Te envié un enlace al email. Ábrelo desde este mismo navegador.', 'ok');
+      else setMsg('Te envié un enlace al correo. Ábrelo desde este mismo navegador.', 'ok');
     });
 
     btnLogout.addEventListener('click', async ()=>{
