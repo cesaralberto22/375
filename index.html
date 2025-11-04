@@ -5,174 +5,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Jornada 37,5 horas Principado de Asturias</title>
   <style>
-    :root {
-      --bg: #0b1220;
-      --card: #0f172a;
-      --muted: #94a3b8;
-      --fg: #e2e8f0;
-      --ok: #22c55e;
-      --err: #ef4444;
-      --border: #1f2937;
-      --work: #38bdf8;
-      --va: #f59e0b;
-      --ap: #a78bfa;
-      --com: #f43f5e;
-      --am: #10b981;
-      --op: #eab308;
-      --accent1: #0ea5e9;
-      --accent2: #0284c7;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial, sans-serif; background: var(--bg); color: var(--fg); }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial, sans-serif; background: #0b1220; color: #e2e8f0; }
     .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
-    h1 { margin: 0; font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 12px; }
-    .sub { color: var(--muted); font-size: 13px; margin-top: 6px; }
-    header { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
-    .flag { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; display: inline-block; }
-    select, button, input[type=email], input[type=password] { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border); background: #0b1220; color: var(--fg); font-weight: 600; }
-    button.primary { background: linear-gradient(180deg, var(--accent1), var(--accent2)); color: white; border: 1px solid #0b83b7; }
-    .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-    .grid { display: grid; grid-template-columns: 320px 1fr 1fr 210px; gap: 8px; align-items: center; margin-top: 10px; }
-    .head { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
-    .row { padding: 8px; border-radius: 12px; }
-    .row:nth-child(even) { background: rgba(148, 163, 184, .06); }
-    input[type=time], select.code { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: #0b1220; color: var(--fg); }
-    .dateTitle { font-weight: 800; }
-    .codeTag { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; margin-left: 8px; border: 1px solid var(--border); }
-    .code-VA { background: rgba(245, 158, 11, .15); color: #f59e0b; }
-    .code-AP { background: rgba(167, 139, 250, .15); color: #a78bfa; }
-    .code-COM { background: rgba(244, 63, 94, .15); color: #f43f5e; }
-    .code-AM { background: rgba(16, 185, 129, .15); color: #10b981; }
-    .code-OP { background: rgba(234, 179, 8, .15); color: #eab308; }
-    .totdia { font-weight: 700; }
-    .totals { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 14px; }
-    .kpi { background: rgba(148, 163, 184, .06); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
-    .kpi .lbl { font-size: 12px; color: var(--muted); }
-    .kpi .val { font-size: 18px; font-weight: 800; margin-top: 6px; }
-    .status { font-size: 18px; font-weight: 900; margin-top: 10px; }
-    .status.ok { color: var(--ok); }
-    .status.err { color: var(--err); }
-    /* Mini calendario */
-    .mini-wrap { max-width: 330px; }
-    .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; font-size: 12px; color: var(--muted); }
-    .badge { display: inline-flex; align-items: center; gap: 6px; }
-    .dot { width: 10px; height: 10px; border-radius: 999px; }
-    .dot.work { background: var(--work); }
-    .dot.VA { background: var(--va); }
-    .dot.AP { background: var(--ap); }
-    .dot.COM { background: var(--com); }
-    .dot.AM { background: var(--am); }
-    .dot.OP { background: var(--op); }
-    .calendar { margin-top: 10px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-    .cal-head { color: var(--muted); font-size: 11px; text-transform: uppercase; text-align: center; }
-    .day { border: 1px solid var(--border); border-radius: 8px; min-height: 34px; padding: 4px; display: flex; flex-direction: column; gap: 4px; }
-    .dnum { font-weight: 700; font-size: 11px; color: #cbd5e1; }
-    .pill { height: 6px; border-radius: 999px; }
-    .p-work { background: var(--work); }
-    .p-VA { background: var(--va); }
-    .p-AP { background: var(--ap); }
-    .p-COM { background: var(--com); }
-    .p-AM { background: var(--am); }
-    .p-OP { background: var(--op); }
-    @media (max-width: 900px) { .grid { grid-template-columns: 1fr 1fr 1fr 1fr; } }
-    .msg { font-size: 12px; margin-top: 6px; }
-    .msg.ok { color: #22c55e; }
-    .msg.err { color: #ef4444; }
-    .msg.warn { color: #f59e0b; }
-    .msg.info { color: #94a3b8; }
+    .card { background: #0f172a; border: 1px solid #1f2937; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+    h1 { font-size: 20px; font-weight: 800; color: #e2e8f0; }
+    input, button { padding: 9px 12px; border-radius: 10px; border: 1px solid #1f2937; background: #0b1220; color: #e2e8f0; font-weight: 600; margin-top: 10px; }
+    button { background: #0ea5e9; color: white; border: 1px solid #0b83b7; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <header>
+        <h1>Jornada 37,5 horas Principado de Asturias</h1>
         <div>
-          <h1>
-            <span class="flag" title="Asturias">
-              <svg viewBox="0 0 160 160" width="28" height="28" style="display:block">
-                <defs><clipPath id="r"><circle cx="80" cy="80" r="80"/></clipPath></defs>
-                <g clip-path="url(#r)">
-                  <rect width="160" height="160" fill="#1f8dd6"/>
-                  <g fill="#ffd700">
-                    <rect x="72" y="35" width="16" height="90"/>
-                    <rect x="25" y="75" width="110" height="16"/>
-                    <circle cx="80" cy="35" r="6"/>
-                  </g>
-                </g>
-              </svg>
-            </span>
-            Jornada 37,5 horas Principado de Asturias
-          </h1>
-          <div class="sub">L–V · Solo cuenta 07:30–19:00 · Bloqueos VA/AP/COM/AM/OP = 7,5 h.</div>
-        </div>
-
-        <!-- Autenticación -->
-        <div style="display: flex; flex-direction: column; gap: 8px; min-width: 330px">
-          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
-            <span id="whoami" style="color: #94a3b8;">Sin sesión</span>
-            <button id="btn-logout" style="display:none;">Salir</button>
-          </div>
-          
-          <div style="display: flex; gap: 8px; flex-wrap: wrap">
-            <input id="email-link" type="email" placeholder="tu@correo.com" />
-            <button id="btn-login-link" class="primary">Acceso por enlace</button>
-          </div>
-          
-          <div style="display: flex; gap: 8px; flex-wrap: wrap">
-            <input id="email-pwd" type="email" placeholder="tu@correo.com" />
-            <input id="pass-pwd" type="password" placeholder="contraseña" />
-            <button id="btn-login-pwd" class="primary">Entrar</button>
-            <button id="btn-register-pwd">Registrarse</button>
-            <button id="btn-forgot">Olvidé contraseña</button>
-          </div>
-
-          <div id="auth-msg" class="msg info"></div>
+          <input id="email" type="email" placeholder="tu@correo.com" />
+          <button id="btn-login-link">Acceso por enlace</button>
         </div>
       </header>
 
-      <!-- Controles de semana, mes y año -->
-      <div class="controls">
-        <select id="sel-year" title="Año"></select>
-        <select id="sel-month" title="Mes"></select>
-        <select id="sel-week" title="Semana del mes"></select>
-        <button id="btn-prev" class="primary" title="Semana anterior">◀</button>
-        <button id="btn-next" class="primary" title="Semana siguiente">▶</button>
-        
-        <!-- Mini calendario -->
-        <div class="mini-wrap" style="margin-left: auto">
-          <div class="legend">
-            <span class="badge"><span class="dot work"></span>Trabajado</span>
-            <span class="badge"><span class="dot VA"></span>VA</span>
-            <span class="badge"><span class="dot AP"></span>AP</span>
-            <span class="badge"><span class="dot COM"></span>COM</span>
-            <span class="badge"><span class="dot AM"></span>AM</span>
-            <span class="badge"><span class="dot OP"></span>OP</span>
-          </div>
-          <div id="cal-title" style="margin-top:6px;font-weight:700"></div>
-          <div class="calendar" id="calendar"></div>
-        </div>
-      </div>
-
-      <!-- Tabla principal -->
-      <div class="grid head" style="margin-top:6px">
-        <div>Día · Fecha</div><div>Entrada</div><div>Salida</div><div>Bloqueo / Total</div>
-      </div>
-      <div id="rows"></div>
-
-      <div class="totals">
-        <div class="kpi"><div class="lbl">Semana ISO</div><div class="val" id="wklabel">—</div></div>
-        <div class="kpi"><div class="lbl">Total acumulado</div><div class="val" id="total-semana">0 h 00 m</div></div>
-        <div class="kpi"><div class="lbl">Objetivo</div><div class="val">37,5 h</div></div>
-      </div>
-      <div id="estado" class="status err">Faltan</div>
+      <div id="auth-msg"></div>
     </div>
   </div>
 
-  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
   <script>
-    /* Código de inicialización y lógica (ver anterior código que ya puse) */
+    const SUPABASE_URL = "https://izkwmbtyzvdiwfvenzbb.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6a3dtYnR5enZkaXdmdmVuemJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzU1ODEsImV4cCI6MjA3NzgxMTU4MX0.jrJNclTJO3uy5WP6q5i01aQbiryQuTWGE1KIUyowAhw";
+    const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const msg = (text) => {
+      document.getElementById("auth-msg").textContent = text;
+    };
+
+    document.getElementById("btn-login-link").onclick = async () => {
+      const email = document.getElementById("email").value.trim();
+      if (!email) return msg("Por favor, ingresa tu email.");
+
+      msg("Enviando enlace...");
+
+      const { error } = await supa.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
+      });
+
+      if (error) {
+        msg("Error: " + error.message);
+      } else {
+        msg("Te envié un enlace. Ábrelo en este navegador.");
+      }
+    };
+
+    supa.auth.onAuthStateChange(() => refreshAuthUI());
+
+    async function refreshAuthUI() {
+      const { data: { user } } = await supa.auth.getUser();
+      if (user) {
+        msg("Sesión iniciada como: " + user.email);
+      } else {
+        msg("No has iniciado sesión.");
+      }
+    }
   </script>
 </body>
 </html>
