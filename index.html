@@ -57,6 +57,8 @@
   .p-work{background:var(--work)} .p-VA{background:var(--va)} .p-AP{background:var(--ap)}
   .p-COM{background:var(--com)} .p-AM{background:var(--am)} .p-OP{background:var(--op)}
   @media (max-width:900px){.grid{grid-template-columns:1fr 1fr 1fr 1fr}}
+  .msg{font-size:12px;margin-top:6px}
+  .msg.ok{color:#22c55e} .msg.err{color:#ef4444} .msg.warn{color:#f59e0b} .msg.info{color:#94a3b8}
 </style>
 </head>
 <body>
@@ -83,19 +85,28 @@
         <div class="sub">L–V · Solo cuenta 07:30–19:00 · Bloqueos VA/AP/COM/AM/OP = 7,5 h.</div>
       </div>
 
-      <!-- Autenticación básica (opcional para sincronizar en la nube) -->
-      <div style="display:flex;flex-direction:column;gap:8px;min-width:320px">
+      <!-- AUTENTICACIÓN: Magic link + Usuario/Contraseña -->
+      <div style="display:flex;flex-direction:column;gap:8px;min-width:330px">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <span id="whoami" style="color:#94a3b8;">Sin sesión</span>
           <button id="btn-logout" style="display:none;">Salir</button>
         </div>
+
+        <!-- Magic link -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="email-link" type="email" placeholder="tu@correo.com" />
+          <button id="btn-login-link" class="primary">Acceso por enlace</button>
+        </div>
+
+        <!-- Usuario / contraseña -->
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <input id="email-pwd" type="email" placeholder="tu@correo.com" />
           <input id="pass-pwd" type="password" placeholder="contraseña" />
           <button id="btn-login-pwd" class="primary">Entrar</button>
           <button id="btn-register-pwd">Registrarse</button>
+          <button id="btn-forgot">Olvidé contraseña</button>
         </div>
-        <div id="auth-msg" style="font-size:12px;color:#94a3b8"></div>
+        <div id="auth-msg" class="msg info"></div>
       </div>
     </header>
 
@@ -121,7 +132,7 @@
       </div>
     </div>
 
-    <!-- Tabla -->
+    <!-- Tabla principal -->
     <div class="grid head" style="margin-top:6px">
       <div>Día · Fecha</div><div>Entrada</div><div>Salida</div><div>Bloqueo / Total</div>
     </div>
@@ -153,7 +164,7 @@ const SUPABASE_URL  = "https://izkwmbtyzvdiwfvenzbb.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6a3dtYnR5enZkaXdmdmVuemJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzU1ODEsImV4cCI6MjA3NzgxMTU4MX0.jrJNclTJO3uy5WP6q5i01aQbiryQuTWGE1KIUyowAhw";
 const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true} });
 
-/* ===== Utiles ===== */
+/* ===== Utilidades ===== */
 const $=id=>document.getElementById(id);
 const TARGET_MIN=Math.round(37.5*60);
 const WORK_START=7*60+30, WORK_END=19*60;
@@ -175,29 +186,61 @@ const fmtDate=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
 let currentMonday, weekDates=[];
 const state=[]; // [{dia,dateKey,e,s,code,total}]
 const ui=[];
-const STORAGE_KEY='horas375_by_date_v3';
+const STORAGE_KEY='horas375_by_date_v4';
 
-/* ===== Auth mínima ===== */
-const who=$('whoami'), msg=$('auth-msg');
-const setMsg=(t,c='#94a3b8')=>{msg.textContent=t; msg.style.color=c;};
+/* ===== Auth (Magic link + Password) ===== */
+const who=$('whoami'), authMsg=$('auth-msg');
+const msg=(t,cls='info')=>{authMsg.textContent=t; authMsg.className='msg '+cls;};
+
 supa.auth.onAuthStateChange(()=>refreshAuthUI());
+
+$('btn-login-link').onclick=async()=>{
+  const email=$('email-link').value.trim(); if(!email){ return msg('Pon tu email','warn'); }
+  msg('Enviando enlace...','info');
+  const { error } = await supa.auth.signInWithOtp({ email, options:{ emailRedirectTo: window.location.origin } });
+  if(error) msg('Error: '+error.message,'err'); else msg('Te envié un enlace. Ábrelo en este navegador.','ok');
+};
+
 $('btn-login-pwd').onclick=async()=>{
   const email=$('email-pwd').value.trim(), pass=$('pass-pwd').value.trim();
-  if(!email||!pass) return setMsg('Email y contraseña necesarios','#f59e0b');
-  const {error}=await supa.auth.signInWithPassword({email,password:pass});
-  if(error) setMsg('Error: '+error.message,'#ef4444'); else setMsg('Sesión iniciada','#22c55e'), refreshAuthUI();
+  if(!email||!pass) return msg('Email y contraseña obligatorios','warn');
+  const { error } = await supa.auth.signInWithPassword({ email, password: pass });
+  if(error) msg('Error: '+error.message,'err'); else msg('Sesión iniciada','ok'), refreshAuthUI();
 };
+
 $('btn-register-pwd').onclick=async()=>{
   const email=$('email-pwd').value.trim(), pass=$('pass-pwd').value.trim();
-  if(!email||!pass) return setMsg('Email y contraseña necesarios','#f59e0b');
-  const {error}=await supa.auth.signUp({email,password:pass});
-  if(error) setMsg('Error: '+error.message,'#ef4444'); else setMsg('Cuenta creada. Inicia sesión.','#22c55e');
+  if(!email||!pass) return msg('Email y contraseña obligatorios','warn');
+  const { data, error } = await supa.auth.signUp({ email, password: pass, options:{ emailRedirectTo: window.location.origin } });
+  if(error) msg('Error: '+error.message,'err');
+  else {
+    if(data.user?.identities?.length===0) msg('El correo ya existe. Inicia sesión.','warn');
+    else msg('Cuenta creada. Revisa tu email si hay confirmación.','ok');
+  }
 };
-$('btn-logout').onclick=async()=>{ await supa.auth.signOut(); setMsg('Sesión cerrada'); refreshAuthUI(); };
+
+$('btn-forgot').onclick=async()=>{
+  const email=$('email-pwd').value.trim(); if(!email) return msg('Pon tu email','warn');
+  const { error } = await supa.auth.resetPasswordForEmail(email,{ redirectTo: window.location.origin });
+  if(error) msg('Error: '+error.message,'err'); else msg('Te envié un email para recuperar la contraseña.','ok');
+};
+
+$('btn-logout').onclick=async()=>{ await supa.auth.signOut(); msg('Sesión cerrada','info'); refreshAuthUI(); };
+
 async function refreshAuthUI(){
-  const {data:{user}}=await supa.auth.getUser();
+  const href=location.href;
+  if(href.includes('code=')||href.includes('access_token=')){
+    // completar magic link
+    try{
+      const { error } = await supa.auth.exchangeCodeForSession(href);
+      if(error) msg('Error de inicio: '+error.message,'err');
+    } finally {
+      history.replaceState({}, document.title, window.location.origin);
+    }
+  }
+  const { data:{ user } } = await supa.auth.getUser();
   if(user){ who.textContent='Sesión: '+user.email; $('btn-logout').style.display='inline-block'; buildCalendar(); loadWeekFromCloud(); }
-  else{ who.textContent='Sin sesión'; $('btn-logout').style.display='none'; buildCalendar(); }
+  else { who.textContent='Sin sesión'; $('btn-logout').style.display='none'; buildCalendar(); }
 }
 
 /* ===== Lógica de horas ===== */
@@ -221,7 +264,6 @@ function makeRow(i){
   const td=document.createElement('div'); td.className='totdia'; td.textContent='—';
   right.appendChild(sel); right.appendChild(td);
 
-  // Funciones UI bloqueo
   function applyLockUI(){
     const tag=$('tag-'+i);
     if(r.code){
@@ -233,12 +275,10 @@ function makeRow(i){
     }
   }
 
-  // Eventos
   eIn.addEventListener('input',()=>{ r.e=eIn.value; onChangeDay(r,i); });
   eOut.addEventListener('input',()=>{ r.s=eOut.value; onChangeDay(r,i); });
   sel.addEventListener('change',()=>{ r.code=sel.value; applyLockUI(); onChangeDay(r,i,true); });
 
-  // Inicial
   applyLockUI();
   row.appendChild(label); row.appendChild(eIn); row.appendChild(eOut); row.appendChild(right);
   $('rows').appendChild(row);
@@ -263,17 +303,17 @@ function recalcWeekTotals(){
 }
 
 /* ===== Local store ===== */
-const loadLocal=()=>{ try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}catch{return{}} };
-const saveLocal=db=>localStorage.setItem(STORAGE_KEY,JSON.stringify(db));
+const loadLocal=()=>{ try{return JSON.parse(localStorage.getItem('horas375_by_date_v4')||'{}')}catch{return{}} };
+const saveLocal=db=>localStorage.setItem('horas375_by_date_v4',JSON.stringify(db));
 function saveDayLocal(r){ const db=loadLocal(); db[r.dateKey]={e:r.e||'',s:r.s||'',code:r.code||''}; saveLocal(db); }
 function fillStateFromLocal(){ const db=loadLocal(); for(const r of state){ const rec=db[r.dateKey]||{e:'',s:'',code:''}; r.e=rec.e; r.s=rec.s; r.code=rec.code; }}
 
 /* ===== Nube ===== */
 let saveTimer=null;
-async function onChangeDay(r, idx, byCode=false){
+async function onChangeDay(r){
   saveDayLocal(r);
   recalcWeekTotals();
-  clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud,400);
+  clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud,300);
   buildCalendar();
 }
 async function saveWeekToCloud(){
@@ -303,7 +343,7 @@ function rebuildStateForMonday(mon){
   buildWeekDates(currentMonday);
   state.length=0;
   for(let i=0;i<5;i++){ state.push({dia:DIAS[i],dateKey:fmtDate(weekDates[i]),e:'',s:'',code:'',total:0}); }
-  fillStateFromLocal(); rebuildRows(); buildCalendar(); // mini calendario del MES del lunes
+  fillStateFromLocal(); rebuildRows(); buildCalendar();
 }
 function populateYearMonth(){
   const now=new Date(), y=now.getFullYear();
@@ -322,21 +362,19 @@ $('btn-prev').onclick=()=>{ const prev=addDays(currentMonday,-7); selYear.value=
 $('btn-next').onclick=()=>{ const next=addDays(currentMonday,7); selYear.value=next.getFullYear(); selMonth.value=next.getMonth(); populateWeeksForMonth(); const iso=next.toISOString(); const opts=[...selWeek.options]; const f=opts.find(o=>o.value===iso); selWeek.value=(f?iso:opts[opts.length-1].value); loadWeek(selWeek.value); };
 function loadWeek(iso){ rebuildStateForMonday(new Date(iso)); loadWeekFromCloud(); }
 
-/* ===== Mini calendario del MES de la semana visible ===== */
+/* ===== Mini calendario del mes activo ===== */
 async function buildCalendar(){
+  if(!currentMonday){ // aún no inicializado
+    const now=new Date(); currentMonday=getMonday(now);
+  }
   const y=currentMonday.getFullYear(), m=currentMonday.getMonth();
   $('cal-title').textContent = `${MESES[m]} ${y}`;
   const cal=$('calendar'); cal.innerHTML='';
-  // cabeceras L M X J V S D
   for(const h of ['L','M','X','J','V','S','D']){ const el=document.createElement('div'); el.className='cal-head'; el.textContent=h; cal.appendChild(el); }
   const first=new Date(y,m,1), last=new Date(y,m+1,0);
-  // inicio de grid: lunes de la semana del día 1
   let start=new Date(first); while(start.getDay()!==1) start=addDays(start,-1);
-  // fin de grid: domingo de la última semana que toca el mes
   let end=new Date(last); while(end.getDay()!==0) end=addDays(end,1);
-
-  // datos (local + nube del mes)
-  const local=loadLocal(); const localMap=new Map(Object.entries(local)); // dateKey -> {e,s,code}
+  const local=loadLocal(); const localMap=new Map(Object.entries(local));
   let cloudMap=new Map();
   const {data:{user}}=await supa.auth.getUser();
   if(user){
@@ -344,21 +382,17 @@ async function buildCalendar(){
     const {data,error}=await supa.from('work_days').select('work_date,minutes,code').eq('user_id',user.id).gte('work_date',from).lte('work_date',to);
     if(!error && data){ cloudMap=new Map(data.map(d=>[d.work_date,{minutes:d.minutes||0,code:d.code||''}])); }
   }
-
   for(let d=new Date(start); d<=end; d=addDays(d,1)){
     const k=fmtDate(d);
     const cell=document.createElement('div'); cell.className='day';
     const dnum=document.createElement('div'); dnum.className='dnum'; dnum.textContent=d.getDate(); cell.appendChild(dnum);
     const pill=document.createElement('div'); pill.className='pill';
-
     let code=''; let worked=false;
     if(cloudMap.has(k)){ const rec=cloudMap.get(k); code=rec.code||''; worked=!code && (rec.minutes||0)>0; }
     else if(localMap.has(k)){ const rec=localMap.get(k); code=rec.code||''; worked=!code && (rec.e||rec.s); }
-
     if(code) pill.classList.add('p-'+code);
     else if(worked) pill.classList.add('p-work');
     else { pill.style.opacity='.25'; pill.style.background='transparent'; }
-
     if(d.getMonth()!==m) cell.style.opacity='.35';
     cell.appendChild(pill);
     cal.appendChild(cell);
@@ -367,8 +401,8 @@ async function buildCalendar(){
 
 /* ===== Init ===== */
 document.addEventListener('DOMContentLoaded', async ()=>{
+  // Selectores
   const now=new Date();
-  // selects
   (function initSel(){
     const y=now.getFullYear(); $('sel-year').innerHTML=[y-1,y,y+1].map(v=>`<option value="${v}">${v}</option>`).join(''); $('sel-year').value=y;
     $('sel-month').innerHTML=MESES.map((m,i)=>`<option value="${i}">${m}</option>`).join(''); $('sel-month').value=now.getMonth();
@@ -378,7 +412,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   const weeks=weeksOfMonth(now.getFullYear(), now.getMonth());
   const match=weeks.find(w=>w.getTime()===monday.getTime()); if(match) $('sel-week').value=match.toISOString();
   rebuildStateForMonday(new Date($('sel-week').value));
-  refreshAuthUI();
+  await refreshAuthUI(); // también completa magic link si vienes del correo
 });
 </script>
 </body>
