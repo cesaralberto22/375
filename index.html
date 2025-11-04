@@ -59,7 +59,7 @@
 
         <!-- AUTENTICACIÓN -->
         <div id="auth" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px">
-          <input id="email" type="email" placeholder="tu@correo.com" />
+          <input id="email" type="email" placeholder="usuario@asturias.org" />
           <button id="btn-login" class="primary">Entrar (magic link)</button>
           <button id="btn-logout" style="display:none;">Salir</button>
           <span id="whoami" style="color:#94a3b8;"></span>
@@ -100,7 +100,7 @@
         <button id="btn-exportar">Guardar semana (CSV)</button>
       </div>
       <div class="hint">
-        Si no inicias sesión se guarda localmente por semana. Con sesión, se guarda en la nube y podrás verlo desde cualquier dispositivo.
+        Sin sesión: guarda local por semana. Con sesión: guarda en nube (Supabase) y lo ves desde cualquier dispositivo.
       </div>
     </div>
   </div>
@@ -112,7 +112,9 @@
     // ======= Supabase (tus credenciales) =======
     const SUPABASE_URL  = "https://izkwmbtyzvdiwfvenzbb.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6a3dtYnR5enZkaXdmdmVuemJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzU1ODEsImV4cCI6MjA3NzgxMTU4MX0.jrJNclTJO3uy5WP6q5i01aQbiryQuTWGE1KIUyowAhw";
+    const REDIRECT_URL  = "https://375-phi.vercel.app"; // ⚠️ pon aquí tu dominio Vercel exacto
     const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
     let currentUser = null;
 
     // --------- Parámetros negocio ---------
@@ -263,16 +265,42 @@
         btnLogin.style.display='inline-block'; email.style.display='inline-block'; btnLogout.style.display='none';
       }
     }
+
+    // Maneja el callback del magic link (muy importante)
+    async function handleAuthRedirect(){
+      // Supabase v2 detecta por defecto, pero forzamos el intercambio por si acaso:
+      const url = new URL(window.location.href);
+      const hasCode = url.searchParams.get('code') || url.hash.includes('access_token') || url.hash.includes('type=recovery');
+      if (hasCode){
+        try{
+          // Intercambia el código del URL por una sesión persistente
+          const { error } = await supa.auth.exchangeCodeForSession(window.location.href);
+          if (error) console.error('exchangeCodeForSession error:', error);
+        } catch(err){
+          console.error('exchangeCodeForSession exception:', err);
+        } finally {
+          // Limpia la URL (quita el code del query/hash)
+          window.history.replaceState({}, document.title, REDIRECT_URL);
+        }
+      }
+    }
+
     btnLogin.addEventListener('click', async ()=>{
-      const mail=(email.value||'').trim(); if(!mail) { alert('Pon tu email'); return; }
-      const REDIRECT_URL = "https://375-phi.vercel.app"; // ← tu URL en Vercel
-const { error } = await supa.auth.signInWithOtp({
-  email: mail,
-  options: { emailRedirectTo: REDIRECT_URL }
-});
-      if (error) alert(error.message); else alert('Te envié un enlace al email. Ábrelo para iniciar sesión.');
+      const mail=(email.value||'').trim().toLowerCase();
+      if (!mail){ alert('Pon tu email'); return; }
+      if (!mail.endsWith('@asturias.org')){ alert('Solo se permiten correos del dominio @asturias.org'); return; }
+      const { error } = await supa.auth.signInWithOtp({
+        email: mail,
+        options: { emailRedirectTo: REDIRECT_URL }
+      });
+      if (error) alert(error.message); else alert('Te envié un enlace al email. Ábrelo y volverás aquí con la sesión iniciada.');
     });
-    btnLogout.addEventListener('click', async ()=>{ await supa.auth.signOut(); currentUser=null; refreshAuthUI(); });
+
+    btnLogout.addEventListener('click', async ()=>{
+      await supa.auth.signOut();
+      currentUser=null;
+      refreshAuthUI();
+    });
 
     supa.auth.onAuthStateChange((_evt,_session)=>{ refreshAuthUI(); });
 
@@ -329,10 +357,11 @@ const { error } = await supa.auth.signInWithOtp({
     });
 
     // --------- Init ---------
-    function init(){
+    async function init(){
       buildRows();
       populateYearMonth();
       populateWeeksForMonth();
+      await handleAuthRedirect();   // 👈 maneja el retorno del magic link
       loadWeek(selWeek.value);
       refreshAuthUI();
     }
@@ -340,4 +369,3 @@ const { error } = await supa.auth.signInWithOtp({
   </script>
 </body>
 </html>
-
