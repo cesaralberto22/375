@@ -4,30 +4,29 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Jornada 37,5 horas Principado de Asturias</title>
-<meta name="description" content="Jornada 37,5h L–V con tope 07:30–19:00. Bloqueo por VA/AP/COM/AM/OP, guardado automático por fecha y mini-calendario de colores."/>
 <style>
   :root{
     --bg:#0b1220; --card:#0f172a; --muted:#94a3b8; --fg:#e2e8f0;
-    --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
+    --ok:#22c55e; --err:#ef4444; --border:#1f2937;
+    --accent1:#0ea5e9; --accent2:#0284c7;
     --work:#38bdf8; --va:#f59e0b; --ap:#a78bfa; --com:#f43f5e; --am:#10b981; --op:#eab308;
-    --border:#1f2937; --accent1:#0ea5e9; --accent2:#0284c7;
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:var(--bg);color:var(--fg)}
-  .wrap{max-width:1200px;margin:0 auto;padding:20px}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px}
   .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
   h1{margin:0;font-size:20px;font-weight:800;display:flex;align-items:center;gap:12px}
   .sub{color:var(--muted);font-size:13px;margin-top:6px}
   header{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
   .flag{width:28px;height:28px;border-radius:50%;overflow:hidden;display:inline-block}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
   select,button,input[type=email],input[type=password]{padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:#0b1220;color:var(--fg);font-weight:600}
   button.primary{background:linear-gradient(180deg,var(--accent1),var(--accent2));color:white;border:1px solid #0b83b7}
-  .grid{display:grid;grid-template-columns:280px 1fr 1fr 200px;gap:8px;align-items:center;margin-top:10px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  /* Tabla */
+  .grid{display:grid;grid-template-columns:320px 1fr 1fr 210px;gap:8px;align-items:center;margin-top:10px}
   .head{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
   .row{padding:8px;border-radius:12px}
   .row:nth-child(even){background:rgba(148,163,184,.06)}
-  label{display:none}
   input[type=time], select.code{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#0b1220;color:var(--fg)}
   .dateTitle{font-weight:800}
   .codeTag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;margin-left:8px;border:1px solid var(--border)}
@@ -43,25 +42,21 @@
   .kpi .val{font-size:18px;font-weight:800;margin-top:6px}
   .status{font-size:18px;font-weight:900;margin-top:10px}
   .status.ok{color:var(--ok)} .status.err{color:var(--err)}
-  .msg{font-size:12px;margin-top:6px}
-  .msg.ok{color:var(--ok)} .msg.err{color:var(--err)} .msg.warn{color:var(--warn)} .msg.info{color:var(--muted)}
-  .auth-box{display:flex;flex-direction:column;gap:8px;min-width:330px}
-  .auth-tabs{display:flex;gap:8px;margin-top:2px}
-  .tab{padding:6px 10px;border:1px solid var(--border);border-radius:10px;cursor:pointer}
-  .tab.active{background:#0b1e2f}
-  .auth-views>div{display:none;margin-top:8px;gap:8px;align-items:center;flex-wrap:wrap}
-  .auth-views>div.active{display:flex}
-  .calendar{margin-top:18px;display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-  .cal-head{color:var(--muted);font-size:12px;text-transform:uppercase;text-align:center}
-  .day{border:1px solid var(--border);border-radius:10px;min-height:54px;padding:6px;display:flex;flex-direction:column;gap:6px}
-  .dnum{font-weight:700;font-size:12px;color:#cbd5e1}
-  .pill{height:8px;border-radius:999px}
-  .p-work{background:var(--work)} .p-VA{background:var(--va)} .p-AP{background:var(--ap)} .p-COM{background:var(--com)} .p-AM{background:var(--am)} .p-OP{background:var(--op)}
-  .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}
+  /* Mini calendario */
+  .mini-wrap{max-width:330px}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:12px;color:var(--muted)}
   .badge{display:inline-flex;align-items:center;gap:6px}
   .dot{width:10px;height:10px;border-radius:999px}
-  .dot.work{background:var(--work)} .dot.VA{background:var(--va)} .dot.AP{background:var(--ap)} .dot.COM{background:var(--com)} .dot.AM{background:var(--am)} .dot.OP{background:var(--op)}
-  @media (max-width:880px){.grid{grid-template-columns:1fr 1fr 1fr 1fr}}
+  .dot.work{background:var(--work)} .dot.VA{background:var(--va)} .dot.AP{background:var(--ap)}
+  .dot.COM{background:var(--com)} .dot.AM{background:var(--am)} .dot.OP{background:var(--op)}
+  .calendar{margin-top:10px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal-head{color:var(--muted);font-size:11px;text-transform:uppercase;text-align:center}
+  .day{border:1px solid var(--border);border-radius:8px;min-height:34px;padding:4px;display:flex;flex-direction:column;gap:4px}
+  .dnum{font-weight:700;font-size:11px;color:#cbd5e1}
+  .pill{height:6px;border-radius:999px}
+  .p-work{background:var(--work)} .p-VA{background:var(--va)} .p-AP{background:var(--ap)}
+  .p-COM{background:var(--com)} .p-AM{background:var(--am)} .p-OP{background:var(--op)}
+  @media (max-width:900px){.grid{grid-template-columns:1fr 1fr 1fr 1fr}}
 </style>
 </head>
 <body>
@@ -85,45 +80,48 @@
           </span>
           Jornada 37,5 horas Principado de Asturias
         </h1>
-        <div class="sub">L–V · Solo cuenta 07:30–19:00 · Bloqueos: VA/AP/COM/AM/OP (7,5 h).</div>
+        <div class="sub">L–V · Solo cuenta 07:30–19:00 · Bloqueos VA/AP/COM/AM/OP = 7,5 h.</div>
       </div>
 
-      <!-- AUTENTICACIÓN -->
-      <div class="auth-box">
+      <!-- Autenticación básica (opcional para sincronizar en la nube) -->
+      <div style="display:flex;flex-direction:column;gap:8px;min-width:320px">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <span id="whoami" style="color:#94a3b8;">Sin sesión</span>
           <button id="btn-logout" style="display:none;">Salir</button>
         </div>
-        <div class="auth-tabs">
-          <div class="tab active" data-tab="link">Acceso por enlace</div>
-          <div class="tab" data-tab="pwd">Usuario / contraseña</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="email-pwd" type="email" placeholder="tu@correo.com" />
+          <input id="pass-pwd" type="password" placeholder="contraseña" />
+          <button id="btn-login-pwd" class="primary">Entrar</button>
+          <button id="btn-register-pwd">Registrarse</button>
         </div>
-        <div class="auth-views">
-          <div id="view-link" class="active">
-            <input id="email-link" type="email" placeholder="tu@correo.com" />
-            <button id="btn-login-link" class="primary">Enviar enlace</button>
-          </div>
-          <div id="view-pwd">
-            <input id="email-pwd" type="email" placeholder="tu@correo.com" />
-            <input id="pass-pwd" type="password" placeholder="contraseña" />
-            <button id="btn-login-pwd" class="primary">Entrar</button>
-            <button id="btn-register-pwd">Registrarse</button>
-            <button id="btn-forgot">¿Olvidaste la contraseña?</button>
-          </div>
-        </div>
-        <div id="auth-msg" class="msg info"></div>
-      </div>
-
-      <div class="controls">
-        <select id="sel-year" title="Año"></select>
-        <select id="sel-month" title="Mes"></select>
-        <select id="sel-week" title="Semana del mes"></select>
-        <button id="btn-prev" class="primary" title="Semana anterior">◀</button>
-        <button id="btn-next" class="primary" title="Semana siguiente">▶</button>
+        <div id="auth-msg" style="font-size:12px;color:#94a3b8"></div>
       </div>
     </header>
 
-    <!-- Cabeceras tabla -->
+    <div class="controls">
+      <select id="sel-year" title="Año"></select>
+      <select id="sel-month" title="Mes"></select>
+      <select id="sel-week" title="Semana del mes"></select>
+      <button id="btn-prev" class="primary" title="Semana anterior">◀</button>
+      <button id="btn-next" class="primary" title="Semana siguiente">▶</button>
+
+      <!-- Mini calendario a la derecha -->
+      <div class="mini-wrap" style="margin-left:auto">
+        <div class="legend">
+          <span class="badge"><span class="dot work"></span>Trabajado</span>
+          <span class="badge"><span class="dot VA"></span>VA</span>
+          <span class="badge"><span class="dot AP"></span>AP</span>
+          <span class="badge"><span class="dot COM"></span>COM</span>
+          <span class="badge"><span class="dot AM"></span>AM</span>
+          <span class="badge"><span class="dot OP"></span>OP</span>
+        </div>
+        <div id="cal-title" style="margin-top:6px;font-weight:700"></div>
+        <div class="calendar" id="calendar"></div>
+      </div>
+    </div>
+
+    <!-- Tabla -->
     <div class="grid head" style="margin-top:6px">
       <div>Día · Fecha</div><div>Entrada</div><div>Salida</div><div>Bloqueo / Total</div>
     </div>
@@ -144,442 +142,243 @@
       </div>
     </div>
     <div id="estado" class="status err">Faltan</div>
-
-    <!-- Mini calendario -->
-    <div style="margin-top:18px">
-      <div class="legend">
-        <span class="badge"><span class="dot work"></span>Trabajado</span>
-        <span class="badge"><span class="dot VA"></span>VA</span>
-        <span class="badge"><span class="dot AP"></span>AP</span>
-        <span class="badge"><span class="dot COM"></span>COM</span>
-        <span class="badge"><span class="dot AM"></span>AM</span>
-        <span class="badge"><span class="dot OP"></span>OP</span>
-      </div>
-      <div class="calendar" id="calendar">
-        <!-- headers -->
-      </div>
-    </div>
   </div>
 </div>
 
 <!-- Supabase SDK -->
 <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-/* ===================== SUPABASE ===================== */
+/* ===== Supabase creds ===== */
 const SUPABASE_URL  = "https://izkwmbtyzvdiwfvenzbb.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6a3dtYnR5enZkaXdmdmVuemJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzU1ODEsImV4cCI6MjA3NzgxMTU4MX0.jrJNclTJO3uy5WP6q5i01aQbiryQuTWGE1KIUyowAhw";
-const REDIRECT_URL  = window.location.origin;
+const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true} });
 
-const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
-  auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
-});
-
-/* ===================== UTILIDADES ===================== */
-const $ = id => document.getElementById(id);
-const setMsg = (t,ty='info') => { const el=$('auth-msg'); el.textContent=t; el.className=`msg ${ty}`; };
-
-const TARGET_MIN = Math.round(37.5*60);
-const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
-const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+/* ===== Utiles ===== */
+const $=id=>document.getElementById(id);
+const TARGET_MIN=Math.round(37.5*60);
 const WORK_START=7*60+30, WORK_END=19*60;
+const DIAS=["Lunes","Martes","Miércoles","Jueves","Viernes"];
+const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const pad=(n,w=2)=>String(n).padStart(w,'0');
 const fmtHM=m=>{const sign=m<0?'-':''; m=Math.abs(m); const h=Math.floor(m/60),mm=m%60; return `${sign}${h} h ${pad(mm)}`;};
-const parseTime=s=>{ if(!s) return null; const [hh,mm]=s.split(':').map(Number); return (Number.isInteger(hh)&&Number.isInteger(mm)&&hh>=0&&hh<24&&mm>=0&&mm<60)?hh*60+mm:null; };
+const parseTime=s=>{if(!s) return null; const [hh,mm]=s.split(':').map(Number); return Number.isInteger(hh)&&Number.isInteger(mm)&&hh>=0&&hh<24&&mm>=0&&mm<60?hh*60+mm:null;};
 const toMidnight=d=>{const x=new Date(d); x.setHours(0,0,0,0); return x;};
 const addDays=(d,n)=>{const x=new Date(d); x.setDate(x.getDate()+n); return x;};
-const fmtLongDate=d=>`${DIAS[d.getDay()===0?6:d.getDay()-1]} · ${pad(d.getDate())} ${MESES[d.getMonth()]} ${d.getFullYear()}`; // Lunes · 03 Noviembre 2025
+const fmtLongDate=d=>`${DIAS[d.getDay()===0?6:d.getDay()-1]} · ${pad(d.getDate())} ${MESES[d.getMonth()]} ${d.getFullYear()}`;
 function isoWeekYear(d){const date=toMidnight(d); date.setDate(date.getDate()+3-((date.getDay()+6)%7)); return date.getFullYear();}
 function isoWeekNumber(d){const date=toMidnight(d); const th=new Date(date); th.setDate(th.getDate()+3-((th.getDay()+6)%7)); const first=new Date(th.getFullYear(),0,4); const diff=(th-first)/86400000; return 1+Math.floor(diff/7);}
 function isoWeekKey(d){return `${isoWeekYear(d)}-W${pad(isoWeekNumber(d))}`;}
-function weeksOfMonth(year, monthIdx){ const res=[]; const first=new Date(year,monthIdx,1), last=new Date(year,monthIdx+1,0); let d=new Date(first); while(d.getDay()!==1) d=addDays(d,1); while(d<=last){ res.push(toMidnight(d)); d=addDays(d,7);} return res; }
+function weeksOfMonth(year,monthIdx){const res=[];const first=new Date(year,monthIdx,1),last=new Date(year,monthIdx+1,0);let d=new Date(first);while(d.getDay()!==1)d=addDays(d,-1);while(d<=last){res.push(toMidnight(d));d=addDays(d,7);}return res;}
 const fmtDate=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 
-/* ===================== ESTADO ===================== */
-let currentMonday;   // Date del lunes visible
-let weekDates=[];    // [Date x5]
-const rowsEl=$('rows');
-const state=[];      // [{dia,dateKey,e,s,code,total}]
-const ui=[];         // refs inputs
-const STORAGE_KEY='horas375_by_date_v2'; // v2 porque añadimos code
+/* ===== Estado ===== */
+let currentMonday, weekDates=[];
+const state=[]; // [{dia,dateKey,e,s,code,total}]
+const ui=[];
+const STORAGE_KEY='horas375_by_date_v3';
 
-/* ===================== AUTH ===================== */
-const who=$('whoami'), btnLogout=$('btn-logout');
-document.querySelectorAll('.tab').forEach(t=>{
-  t.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    t.classList.add('active');
-    document.querySelectorAll('.auth-views>div').forEach(x=>x.classList.remove('active'));
-    (t.dataset.tab==='link'?$('view-link'):$('view-pwd')).classList.add('active');
-  });
-});
-
-supa.auth.onAuthStateChange((_evt,_session)=>{ refreshAuthUI(); });
-
+/* ===== Auth mínima ===== */
+const who=$('whoami'), msg=$('auth-msg');
+const setMsg=(t,c='#94a3b8')=>{msg.textContent=t; msg.style.color=c;};
+supa.auth.onAuthStateChange(()=>refreshAuthUI());
+$('btn-login-pwd').onclick=async()=>{
+  const email=$('email-pwd').value.trim(), pass=$('pass-pwd').value.trim();
+  if(!email||!pass) return setMsg('Email y contraseña necesarios','#f59e0b');
+  const {error}=await supa.auth.signInWithPassword({email,password:pass});
+  if(error) setMsg('Error: '+error.message,'#ef4444'); else setMsg('Sesión iniciada','#22c55e'), refreshAuthUI();
+};
+$('btn-register-pwd').onclick=async()=>{
+  const email=$('email-pwd').value.trim(), pass=$('pass-pwd').value.trim();
+  if(!email||!pass) return setMsg('Email y contraseña necesarios','#f59e0b');
+  const {error}=await supa.auth.signUp({email,password:pass});
+  if(error) setMsg('Error: '+error.message,'#ef4444'); else setMsg('Cuenta creada. Inicia sesión.','#22c55e');
+};
+$('btn-logout').onclick=async()=>{ await supa.auth.signOut(); setMsg('Sesión cerrada'); refreshAuthUI(); };
 async function refreshAuthUI(){
-  const { data:{ user } } = await supa.auth.getUser();
-  if (user){
-    who.textContent=`Sesión: ${user.email}`; btnLogout.style.display='inline-block'; setMsg('Sesión iniciada','ok');
-    loadWeekFromCloud(); // sincroniza semana visible
-    buildCalendar();     // repinta calendario con datos cloud/local
-  } else {
-    who.textContent='Sin sesión'; btnLogout.style.display='none'; setMsg('No has iniciado sesión','info');
-  }
-}
-$('btn-logout').addEventListener('click', async ()=>{ await supa.auth.signOut(); setMsg('Sesión cerrada','info'); refreshAuthUI(); });
-
-$('btn-login-link').addEventListener('click', async ()=>{
-  const mail=($('email-link').value||'').trim(); if(!mail){ setMsg('Pon tu email','warn'); return; }
-  setMsg('Enviando enlace...','info');
-  const { error } = await supa.auth.signInWithOtp({ email: mail, options:{ emailRedirectTo: REDIRECT_URL } });
-  if(error) setMsg('Error enviando enlace: '+error.message,'err'); else setMsg('Te envié un enlace. Ábrelo en este navegador.','ok');
-});
-$('btn-login-pwd').addEventListener('click', async ()=>{
-  const mail=($('email-pwd').value||'').trim(), pass=($('pass-pwd').value||'').trim();
-  if(!mail||!pass) return setMsg('Email y contraseña son obligatorios','warn');
-  setMsg('Iniciando sesión...','info');
-  const { error } = await supa.auth.signInWithPassword({ email: mail, password: pass });
-  if(error) setMsg('Error al iniciar sesión: '+error.message,'err'); else setMsg('Sesión iniciada','ok');
-  refreshAuthUI();
-});
-$('btn-register-pwd').addEventListener('click', async ()=>{
-  const mail=($('email-pwd').value||'').trim(), pass=($('pass-pwd').value||'').trim();
-  if(!mail||!pass) return setMsg('Email y contraseña son obligatorios','warn');
-  setMsg('Creando cuenta...','info');
-  const { data, error } = await supa.auth.signUp({ email: mail, password: pass, options:{ emailRedirectTo: REDIRECT_URL } });
-  if(error) setMsg('Error al registrarse: '+error.message,'err');
-  else { if(data.user?.identities?.length===0) setMsg('El correo ya existe. Inicia sesión.','warn'); else setMsg('Cuenta creada. Revisa tu email si hay confirmación.','ok'); }
-  refreshAuthUI();
-});
-$('btn-forgot').addEventListener('click', async ()=>{
-  const mail=($('email-pwd').value||'').trim(); if(!mail) return setMsg('Pon tu email para recuperar contraseña','warn');
-  setMsg('Enviando email de recuperación...','info');
-  const { error } = await supa.auth.resetPasswordForEmail(mail,{ redirectTo: REDIRECT_URL });
-  if(error) setMsg('Error al enviar recuperación: '+error.message,'err'); else setMsg('Email de recuperación enviado.','ok');
-});
-
-async function handleAuthRedirect(){
-  const href=location.href;
-  if(href.includes('code=')||href.includes('access_token=')){
-    try{ const { error } = await supa.auth.exchangeCodeForSession(href); if(error) setMsg('Error de inicio: '+error.message,'err'); }
-    finally{ history.replaceState({},document.title,REDIRECT_URL); }
-  }
-  if(href.includes('type=recovery')){ /* si quisieras modal de nueva pass aquí */ }
+  const {data:{user}}=await supa.auth.getUser();
+  if(user){ who.textContent='Sesión: '+user.email; $('btn-logout').style.display='inline-block'; buildCalendar(); loadWeekFromCloud(); }
+  else{ who.textContent='Sin sesión'; $('btn-logout').style.display='none'; buildCalendar(); }
 }
 
-/* ===================== CÓMPUTO / GUARDADO ===================== */
-function overlapMins(start,end,winStart=WORK_START,winEnd=WORK_END){
-  if(start==null||end==null) return 0;
-  if(end<start) end+=24*60;
-  const a=Math.max(start,winStart), b=Math.min(end,winEnd);
-  return Math.max(0,b-a);
-}
-
-function statusRender(totalMin){
-  const est=$('estado');
-  if(totalMin>=TARGET_MIN){ est.textContent='Horas Completas'; est.className='status ok'; }
-  else { est.textContent='Faltan'; est.className='status err'; }
-}
+/* ===== Lógica de horas ===== */
+function overlapMins(start,end){ if(start==null||end==null) return 0; if(end<start) end+=24*60; const a=Math.max(start,WORK_START), b=Math.min(end,WORK_END); return Math.max(0,b-a); }
+function calcDayMinutes(r){ return r.code ? 450 : overlapMins(parseTime(r.e), parseTime(r.s)); } // 7.5h si bloqueado
+function renderStatus(total){ const e=$('estado'); if(total>=TARGET_MIN){ e.textContent='Horas Completas'; e.className='status ok'; } else { e.textContent='Faltan'; e.className='status err'; } }
 
 function makeRow(i){
   const r=state[i];
   const row=document.createElement('div'); row.className='grid row';
   const label=document.createElement('div');
-  label.innerHTML=`<div class="dateTitle">${fmtLongDate(new Date(r.dateKey))}<span class="codeTag ${r.code?('code-'+r.code):''}" ${r.code?'':'style="display:none"'} id="tag-${i}">${r.code||''}</span></div>`;
+  label.innerHTML=`<div class="dateTitle">${fmtLongDate(new Date(r.dateKey))}<span id="tag-${i}" class="codeTag" style="display:none"></span></div>`;
   const eIn=document.createElement('input'); eIn.type='time'; eIn.value=r.e||'';
   const eOut=document.createElement('input'); eOut.type='time'; eOut.value=r.s||'';
   const right=document.createElement('div');
   const sel=document.createElement('select'); sel.className='code'; sel.innerHTML=`
     <option value="">(sin bloqueo)</option>
-    <option value="VA">VA (Vacaciones)</option>
-    <option value="AP">AP</option>
-    <option value="COM">COM</option>
-    <option value="AM">AM</option>
-    <option value="OP">OP</option>`;
+    <option value="VA">VA</option><option value="AP">AP</option>
+    <option value="COM">COM</option><option value="AM">AM</option><option value="OP">OP</option>`;
   sel.value=r.code||'';
-  const td=document.createElement('div'); td.className='totdia'; td.textContent=r.total?fmtHM(r.total):'—';
-  right.appendChild(sel); right.appendChild(document.createElement('div')); right.lastChild.textContent=td.textContent; // placeholder, luego lo sustituimos
-  right.replaceChild(td, right.lastChild);
+  const td=document.createElement('div'); td.className='totdia'; td.textContent='—';
+  right.appendChild(sel); right.appendChild(td);
 
-  // interacciones
-  function applyLockUI(code){
+  // Funciones UI bloqueo
+  function applyLockUI(){
     const tag=$('tag-'+i);
-    if(code){
+    if(r.code){
       eIn.disabled=true; eOut.disabled=true;
-      eIn.classList.add('disabled'); eOut.classList.add('disabled');
-      tag.style.display='inline-block'; tag.textContent=code; tag.className='codeTag code-'+code;
+      tag.style.display='inline-block'; tag.textContent=r.code;
+      tag.className='codeTag code-'+r.code;
     }else{
-      eIn.disabled=false; eOut.disabled=false;
-      tag.style.display='none';
+      eIn.disabled=false; eOut.disabled=false; tag.style.display='none';
     }
   }
+
+  // Eventos
   eIn.addEventListener('input',()=>{ r.e=eIn.value; onChangeDay(r,i); });
   eOut.addEventListener('input',()=>{ r.s=eOut.value; onChangeDay(r,i); });
-  sel.addEventListener('change',()=>{
-    r.code=sel.value;
-    applyLockUI(r.code);
-    onChangeDay(r,i,true);
-  });
+  sel.addEventListener('change',()=>{ r.code=sel.value; applyLockUI(); onChangeDay(r,i,true); });
 
-  // inicio
-  applyLockUI(r.code);
+  // Inicial
+  applyLockUI();
   row.appendChild(label); row.appendChild(eIn); row.appendChild(eOut); row.appendChild(right);
-  rowsEl.appendChild(row); ui[i]={td,eIn,eOut,sel,label};
+  $('rows').appendChild(row);
+  ui[i]={td,eIn,eOut,sel};
 }
 
 function rebuildRows(){
-  rowsEl.innerHTML=''; ui.length=0;
+  $('rows').innerHTML=''; ui.length=0;
   for(let i=0;i<state.length;i++) makeRow(i);
   recalcWeekTotals();
-}
-
-const loadLocal=()=>{ try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}catch{return{}} };
-const saveLocal=db=>localStorage.setItem(STORAGE_KEY,JSON.stringify(db));
-function saveDayLocal(r){
-  const db=loadLocal(); db[r.dateKey]={ e:r.e||'', s:r.s||'', code:r.code||'' }; saveLocal(db);
-}
-function fillStateFromLocal(){
-  const db=loadLocal();
-  for(const r of state){
-    const rec=db[r.dateKey]||{e:'',s:'',code:''};
-    r.e=rec.e||''; r.s=rec.s||''; r.code=rec.code||'';
-  }
-}
-
-function calcDayMinutes(r){
-  if(r.code) return 450; // 7.5 h bloqueadas
-  return overlapMins(parseTime(r.e), parseTime(r.s));
-}
-
-let saveTimer=null;
-async function onChangeDay(r, idx, fromCode=false){
-  // reglas orientativas (no bloqueo duro): contadores por año (AP 6, COM 2 en 2025, VA mín 5 seguidos salvo 5 sueltos)
-  // Aquí solo avisamos vía mensaje si parece exceder; no impedimos guardar.
-  if(fromCode && r.code){
-    checkSoftRules(r);
-  }
-  saveDayLocal(r);
-  recalcWeekTotals();
-  clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud,400);
-  buildCalendar();
 }
 
 function recalcWeekTotals(){
   let sum=0;
   for(let i=0;i<state.length;i++){
     const mins=calcDayMinutes(state[i]);
-    state[i].total=mins||0;
-    ui[i].td.textContent = mins?fmtHM(mins):'—';
+    state[i].total=mins; ui[i].td.textContent=mins?fmtHM(mins):'—'; sum+=mins;
   }
-  // sumar todos los de la semana
-  sum = state.reduce((a,b)=>a+(b.total||0),0);
   $('total-semana').textContent=fmtHM(sum);
   $('wklabel').textContent=isoWeekKey(currentMonday);
-  statusRender(sum);
+  renderStatus(sum);
 }
 
-/* ====== Reglas “suaves” para avisar (no bloquear duro) ====== */
-async function checkSoftRules(r){
-  const year = new Date(r.dateKey).getFullYear();
-  const { data:{ user } } = await supa.auth.getUser();
-  let cloud = [];
-  if(user){
-    const from = `${year}-01-01`, to = `${year}-12-31`;
-    const { data, error } = await supa.from('work_days').select('work_date,code').eq('user_id', user.id).gte('work_date', from).lte('work_date', to);
-    cloud = error?[]:data||[];
-  }
-  // mezclar con local
-  const localDB = loadLocal();
-  const allDates = new Map();
-  for(const d of cloud){ allDates.set(d.work_date, d.code||''); }
-  for(const [k,v] of Object.entries(localDB)){ if(String(k).startsWith(String(year))) allDates.set(k, v.code||''); }
+/* ===== Local store ===== */
+const loadLocal=()=>{ try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}catch{return{}} };
+const saveLocal=db=>localStorage.setItem(STORAGE_KEY,JSON.stringify(db));
+function saveDayLocal(r){ const db=loadLocal(); db[r.dateKey]={e:r.e||'',s:r.s||'',code:r.code||''}; saveLocal(db); }
+function fillStateFromLocal(){ const db=loadLocal(); for(const r of state){ const rec=db[r.dateKey]||{e:'',s:'',code:''}; r.e=rec.e; r.s=rec.s; r.code=rec.code; }}
 
-  const codes=[...allDates.values()].filter(Boolean);
-  const apUsed=codes.filter(c=>c==='AP').length;
-  const comUsed=codes.filter(c=>c==='COM').length;
-
-  if(r.code==='AP' && apUsed>6){
-    setMsg('Aviso: AP supera los 6 días anuales.','warn');
-  }
-  if(r.code==='COM' && year===2025 && comUsed>2){
-    setMsg('Aviso: COM supera los 2 días en 2025.','warn');
-  }
-  if(r.code==='VA'){
-    // aproximado: si no forma parte de un bloque de >=5 laborables consecutivos, cuenta como "suelto".
-    // contamos sueltos y avisamos al pasar de 5.
-    const vaDates=[...allDates.entries()].filter(([,c])=>c==='VA').map(([d])=>d).sort();
-    const asDate = s => { const [Y,M,D]=s.split('-').map(Number); return new Date(Y, M-1, D); };
-    let singles=0;
-    for(const s of vaDates){
-      const d=asDate(s), dow=d.getDay();
-      if(dow===0||dow===6) continue; // ignorar finde por aproximación
-      const prev=addDays(d,-1), next=addDays(d,1);
-      const pkey=fmtDate(prev), nkey=fmtDate(next);
-      const prevIsVA = allDates.get(pkey)==='VA';
-      const nextIsVA = allDates.get(nkey)==='VA';
-      if(!(prevIsVA||nextIsVA)) singles++;
-    }
-    if(singles>5) setMsg('Aviso: VA sueltas superan 5 días. Deben ser bloques de mínimo 5 días salvo 5 sueltos.','warn');
-  }
+/* ===== Nube ===== */
+let saveTimer=null;
+async function onChangeDay(r, idx, byCode=false){
+  saveDayLocal(r);
+  recalcWeekTotals();
+  clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud,400);
+  buildCalendar();
 }
-
-/* ===================== NUBE ===================== */
 async function saveWeekToCloud(){
-  const { data:{ user } } = await supa.auth.getUser();
-  if(!user) return;
-  const payload = state.map(r=>({
-    user_id: user.id,
-    work_date: r.dateKey,
-    e: r.e||'',
-    s: r.s||'',
-    minutes: calcDayMinutes(r) || 0,
-    code: r.code||''
-  }));
-  const { error } = await supa.from('work_days').upsert(payload,{ onConflict:'user_id,work_date' });
-  if(error) console.error('Supabase upsert error', error);
+  const {data:{user}}=await supa.auth.getUser(); if(!user) return;
+  const payload = state.map(r=>({user_id:user.id,work_date:r.dateKey,e:r.e||'',s:r.s||'',minutes:calcDayMinutes(r)||0,code:r.code||''}));
+  await supa.from('work_days').upsert(payload,{onConflict:'user_id,work_date'});
 }
-
 async function loadWeekFromCloud(){
-  const { data:{ user } } = await supa.auth.getUser();
-  if(!user) return;
-  const from = fmtDate(weekDates[0]), to = fmtDate(weekDates[4]);
-  const { data, error } = await supa.from('work_days')
-    .select('work_date,e,s,minutes,code').eq('user_id', user.id).gte('work_date', from).lte('work_date', to);
-  if(error) { console.error(error); return; }
-  if(data && data.length){
-    const byDate = Object.fromEntries(data.map(d=>[d.work_date, d]));
-    for(let i=0;i<state.length;i++){
-      const r=state[i]; const rec=byDate[r.dateKey];
-      if(rec){
-        r.e=rec.e||''; r.s=rec.s||''; r.code=rec.code||'';
-        // refleja en UI
-        ui[i].eIn.value=r.e; ui[i].eOut.value=r.s; ui[i].sel.value=r.code||'';
-        const tag = ui[i].label.querySelector('.codeTag'); if(r.code){ tag.style.display='inline-block'; tag.textContent=r.code; tag.className='codeTag code-'+r.code; ui[i].eIn.disabled=true; ui[i].eOut.disabled=true; } else { tag.style.display='none'; ui[i].eIn.disabled=false; ui[i].eOut.disabled=false; }
-      }
-    }
-    recalcWeekTotals();
-    buildCalendar();
+  const {data:{user}}=await supa.auth.getUser(); if(!user) return;
+  const from=fmtDate(weekDates[0]), to=fmtDate(weekDates[4]);
+  const {data,error}=await supa.from('work_days').select('work_date,e,s,code,minutes').eq('user_id',user.id).gte('work_date',from).lte('work_date',to);
+  if(error||!data) return;
+  const byDate=Object.fromEntries(data.map(d=>[d.work_date,d]));
+  for(let i=0;i<state.length;i++){
+    const k=state[i].dateKey, rec=byDate[k];
+    if(rec){ state[i].e=rec.e||''; state[i].s=rec.s||''; state[i].code=rec.code||''; ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s; ui[i].sel.value=state[i].code; }
   }
+  recalcWeekTotals(); buildCalendar();
 }
 
-/* ===================== SEMANA Y FECHAS ===================== */
-const selYear=$('sel-year'), selMonth=$('sel-month'), selWeek=$('sel-week'), wkLabel=$('wklabel');
-
-function getMonday(d){ const off=(d.getDay()+6)%7; const x=new Date(d); x.setDate(x.getDate()-off); x.setHours(0,0,0,0); return x; }
-
+/* ===== Semana/Controles ===== */
+const selYear=$('sel-year'), selMonth=$('sel-month'), selWeek=$('sel-week');
+function getMonday(d){const off=(d.getDay()+6)%7; const x=new Date(d); x.setDate(x.getDate()-off); x.setHours(0,0,0,0); return x;}
 function buildWeekDates(mon){ weekDates=Array.from({length:5},(_,i)=>addDays(new Date(mon),i)); }
-
 function rebuildStateForMonday(mon){
   currentMonday=toMidnight(mon);
   buildWeekDates(currentMonday);
   state.length=0;
-  for(let i=0;i<5;i++){
-    state.push({ dia: DIAS[i], dateKey: fmtDate(weekDates[i]), e:'', s:'', code:'', total:0 });
-  }
-  fillStateFromLocal();
-  rebuildRows();
+  for(let i=0;i<5;i++){ state.push({dia:DIAS[i],dateKey:fmtDate(weekDates[i]),e:'',s:'',code:'',total:0}); }
+  fillStateFromLocal(); rebuildRows(); buildCalendar(); // mini calendario del MES del lunes
 }
-
 function populateYearMonth(){
-  const now=new Date(); const thisYear=now.getFullYear();
-  selYear.innerHTML=[thisYear-1,thisYear,thisYear+1].map(y=>`<option value="${y}">${y}</option>`).join('');
-  selYear.value=thisYear;
-  selMonth.innerHTML=MESES.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
-  selMonth.value=now.getMonth();
+  const now=new Date(), y=now.getFullYear();
+  selYear.innerHTML=[y-1,y,y+1].map(v=>`<option value="${v}">${v}</option>`).join(''); selYear.value=y;
+  selMonth.innerHTML=MESES.map((m,i)=>`<option value="${i}">${m}</option>`).join(''); selMonth.value=now.getMonth();
 }
 function populateWeeksForMonth(){
   const y=+selYear.value, m=+selMonth.value; const weeks=weeksOfMonth(y,m);
-  if(!weeks.length){ selWeek.innerHTML='<option>(sin semanas)</option>'; return; }
-  selWeek.innerHTML=weeks.map(d=>{
-    const end=addDays(d,6); const wk=isoWeekKey(d).split('W')[1];
-    const label=`Sem ${wk} · ${pad(d.getDate())}/${pad(d.getMonth()+1)}–${pad(end.getDate())}/${pad(end.getMonth()+1)}`;
-    return `<option value="${d.toISOString()}">${label}</option>`;
-  }).join('');
-  const today=getMonday(new Date());
-  const match=weeks.find(w=>w.getTime()===today.getTime());
-  selWeek.value=(match?match:weeks[0]).toISOString();
+  selWeek.innerHTML=weeks.map(d=>{const e=addDays(d,6); const wk=isoWeekKey(d).split('W')[1]; return `<option value="${d.toISOString()}">Sem ${wk} · ${pad(d.getDate())}/${pad(d.getMonth()+1)}–${pad(e.getDate())}/${pad(e.getMonth()+1)}</option>`;}).join('');
+  const today=getMonday(new Date()); const match=weeks.find(w=>w.getTime()===today.getTime()); selWeek.value=(match?match:weeks[0]).toISOString();
 }
-selYear.addEventListener('change',()=>{ populateWeeksForMonth(); loadWeek(selWeek.value); });
-selMonth.addEventListener('change',()=>{ populateWeeksForMonth(); loadWeek(selWeek.value); });
-selWeek.addEventListener('change',()=>{ loadWeek(selWeek.value); });
+selYear.onchange=()=>{ populateWeeksForMonth(); loadWeek(selWeek.value); };
+selMonth.onchange=()=>{ populateWeeksForMonth(); loadWeek(selWeek.value); };
+selWeek.onchange=()=>{ loadWeek(selWeek.value); };
+$('btn-prev').onclick=()=>{ const prev=addDays(currentMonday,-7); selYear.value=prev.getFullYear(); selMonth.value=prev.getMonth(); populateWeeksForMonth(); const iso=prev.toISOString(); const opt=[...selWeek.options].find(o=>o.value===iso); selWeek.value=(opt?iso:selWeek.options[0].value); loadWeek(selWeek.value); };
+$('btn-next').onclick=()=>{ const next=addDays(currentMonday,7); selYear.value=next.getFullYear(); selMonth.value=next.getMonth(); populateWeeksForMonth(); const iso=next.toISOString(); const opts=[...selWeek.options]; const f=opts.find(o=>o.value===iso); selWeek.value=(f?iso:opts[opts.length-1].value); loadWeek(selWeek.value); };
+function loadWeek(iso){ rebuildStateForMonday(new Date(iso)); loadWeekFromCloud(); }
 
-function loadWeek(isoStr){
-  rebuildStateForMonday(new Date(isoStr));
-  loadWeekFromCloud();
-  buildCalendar();
-}
-
-/* ===================== CALENDARIO ===================== */
-const cal=$('calendar');
-function buildCalendarHeaders(){
-  cal.innerHTML='';
-  const heads=['L','M','X','J','V','S','D'];
-  for(const h of heads){ const el=document.createElement('div'); el.className='cal-head'; el.textContent=h; cal.appendChild(el); }
-}
-function buildCalendar(){
-  buildCalendarHeaders();
-  const y=+selYear.value, m=+selMonth.value;
+/* ===== Mini calendario del MES de la semana visible ===== */
+async function buildCalendar(){
+  const y=currentMonday.getFullYear(), m=currentMonday.getMonth();
+  $('cal-title').textContent = `${MESES[m]} ${y}`;
+  const cal=$('calendar'); cal.innerHTML='';
+  // cabeceras L M X J V S D
+  for(const h of ['L','M','X','J','V','S','D']){ const el=document.createElement('div'); el.className='cal-head'; el.textContent=h; cal.appendChild(el); }
   const first=new Date(y,m,1), last=new Date(y,m+1,0);
-  // mapa de colores por fecha
-  const local=loadLocal();
-  const byDateLocal=new Map(Object.entries(local)); // dateKey -> {e,s,code}
-  // intentamos mezclar con cloud del mes (si logueado)
+  // inicio de grid: lunes de la semana del día 1
+  let start=new Date(first); while(start.getDay()!==1) start=addDays(start,-1);
+  // fin de grid: domingo de la última semana que toca el mes
+  let end=new Date(last); while(end.getDay()!==0) end=addDays(end,1);
+
+  // datos (local + nube del mes)
+  const local=loadLocal(); const localMap=new Map(Object.entries(local)); // dateKey -> {e,s,code}
   let cloudMap=new Map();
-  (async ()=>{
-    const { data:{ user } } = await supa.auth.getUser();
-    if(user){
-      const from=`${y}-${pad(m+1)}-01`, to=`${y}-${pad(m+1)}-${pad(last.getDate())}`;
-      const { data, error } = await supa.from('work_days').select('work_date,minutes,code').eq('user_id', user.id).gte('work_date', from).lte('work_date', to);
-      if(!error && data){ cloudMap=new Map(data.map(d=>[d.work_date,{ minutes:d.minutes||0, code:d.code||'' }])); }
-    }
-    // rellenar celdas
-    // calcular primer lunes del grid
-    let start=new Date(first);
-    while(start.getDay()!==1) start=addDays(start,-1);
-    const end=addDays(new Date(last), (7-((last.getDay()+6)%7))-1); // hasta domingo de última semana vista
+  const {data:{user}}=await supa.auth.getUser();
+  if(user){
+    const from=`${y}-${pad(m+1)}-01`, to=`${y}-${pad(m+1)}-${pad(last.getDate())}`;
+    const {data,error}=await supa.from('work_days').select('work_date,minutes,code').eq('user_id',user.id).gte('work_date',from).lte('work_date',to);
+    if(!error && data){ cloudMap=new Map(data.map(d=>[d.work_date,{minutes:d.minutes||0,code:d.code||''}])); }
+  }
 
-    for(let d=new Date(start); d<=end; d=addDays(d,1)){
-      const cell=document.createElement('div'); cell.className='day';
-      const dk=fmtDate(d);
-      const dnum=document.createElement('div'); dnum.className='dnum'; dnum.textContent=d.getDate();
-      cell.appendChild(dnum);
+  for(let d=new Date(start); d<=end; d=addDays(d,1)){
+    const k=fmtDate(d);
+    const cell=document.createElement('div'); cell.className='day';
+    const dnum=document.createElement('div'); dnum.className='dnum'; dnum.textContent=d.getDate(); cell.appendChild(dnum);
+    const pill=document.createElement('div'); pill.className='pill';
 
-      // color status
-      let code=''; let worked=false;
-      if(cloudMap.has(dk)){ const rec=cloudMap.get(dk); if(rec.code) code=rec.code; else worked = (rec.minutes||0)>0; }
-      else if(byDateLocal.has(dk)){ const rec=byDateLocal.get(dk); code=rec.code||''; if(!code){ // estimar minutos local
-          // aproximado local (no tenemos minutes), si tiene horas, lo pintamos trabajado
-          worked = !!(rec.e||rec.s);
-      } }
+    let code=''; let worked=false;
+    if(cloudMap.has(k)){ const rec=cloudMap.get(k); code=rec.code||''; worked=!code && (rec.minutes||0)>0; }
+    else if(localMap.has(k)){ const rec=localMap.get(k); code=rec.code||''; worked=!code && (rec.e||rec.s); }
 
-      const pill=document.createElement('div'); pill.className='pill';
-      if(code){ pill.classList.add('p-'+code); }
-      else if(worked){ pill.classList.add('p-work'); }
-      else { pill.style.opacity='.25'; pill.style.background='transparent'; }
+    if(code) pill.classList.add('p-'+code);
+    else if(worked) pill.classList.add('p-work');
+    else { pill.style.opacity='.25'; pill.style.background='transparent'; }
 
-      // grisar fuera de mes
-      if(d.getMonth()!==m){ cell.style.opacity='.35'; }
-
-      cell.appendChild(pill);
-      cal.appendChild(cell);
-    }
-  })();
+    if(d.getMonth()!==m) cell.style.opacity='.35';
+    cell.appendChild(pill);
+    cal.appendChild(cell);
+  }
 }
 
-/* ===================== INIT ===================== */
+/* ===== Init ===== */
 document.addEventListener('DOMContentLoaded', async ()=>{
-  // selects
   const now=new Date();
-  populateYearMonth();
-  populateWeeksForMonth();
-  const monday=getMonday(new Date());
+  // selects
+  (function initSel(){
+    const y=now.getFullYear(); $('sel-year').innerHTML=[y-1,y,y+1].map(v=>`<option value="${v}">${v}</option>`).join(''); $('sel-year').value=y;
+    $('sel-month').innerHTML=MESES.map((m,i)=>`<option value="${i}">${m}</option>`).join(''); $('sel-month').value=now.getMonth();
+    populateWeeksForMonth();
+  })();
+  const monday = (d=>{const off=(d.getDay()+6)%7; d=new Date(d); d.setDate(d.getDate()-off); d.setHours(0,0,0,0); return d;})(now);
   const weeks=weeksOfMonth(now.getFullYear(), now.getMonth());
-  const match=weeks.find(w=>w.getTime()===monday.getTime());
-  if(match) selWeek.value=match.toISOString();
-  // estado semana
-  rebuildStateForMonday(new Date(selWeek.value));
-  await handleAuthRedirect();
-  await refreshAuthUI();
-  buildCalendar();
+  const match=weeks.find(w=>w.getTime()===monday.getTime()); if(match) $('sel-week').value=match.toISOString();
+  rebuildStateForMonday(new Date($('sel-week').value));
+  refreshAuthUI();
 });
 </script>
 </body>
