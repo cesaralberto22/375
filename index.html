@@ -282,26 +282,32 @@
     function isoWeekNumber(d){ const date=toMidnight(d); const th=new Date(date); th.setDate(th.getDate()+3-((th.getDay()+6)%7)); const first=new Date(th.getFullYear(),0,4); const diff=(th-first)/86400000; return 1+Math.floor(diff/7); }
     function isoWeekKey(d){ return `${isoWeekYear(d)}-W${pad(isoWeekNumber(d))}`; }
     function weeksOfMonth(year, monthIdx){
-      const firstOfMonth = new Date(year, monthIdx, 1);
-      const start = getMonday(firstOfMonth);
-      const lastOfMonth = new Date(year, monthIdx + 1, 0);
-      const end = getMonday(lastOfMonth);
-      const res = [];
-      let d = toMidnight(start);
-      while (d <= end){ res.push(new Date(d)); d = addDays(d,7); }
+      // **Dejo tu implementación original** (solo semanas cuyo lunes cae en el mes).
+      const res=[]; const first=new Date(year,monthIdx,1), last=new Date(year,monthIdx+1,0);
+      let d=new Date(first); while(d.getDay()!==1) d=addDays(d,1);
+      while(d<=last){ res.push(toMidnight(d)); d=addDays(d,7); }
       return res;
     }
     const fmtDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 
-    // === NUEVO: Fecha larga "Lunes 03 de Noviembre de 2025"
+    // --- Formateo robusto: "Lunes 03 de Noviembre de 2025"
     const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
     function fmtLongDate(d){
-      const parts = new Intl.DateTimeFormat('es-ES', { weekday:'long', day:'2-digit', month:'long', year:'numeric' }).formatToParts(d);
-      const map = Object.fromEntries(parts.map(p=>[p.type,p.value]));
-      const wd = cap((map.weekday||'').replace(',', '').trim());
-      const dd = (map.day||'').padStart(2,'0');
-      const mm = cap((map.month||'').trim());
-      const yy = (map.year||'').trim();
+      try{
+        if(!(d instanceof Date) || isNaN(d)) return '';
+        const parts = new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).formatToParts(d);
+        const map = {};
+        for(const p of parts){ if(p.type!=="literal") map[p.type]=p.value; }
+        const wd = cap((map.weekday||'').replace(',', '').trim());
+        const dd = (map.day||'').padStart(2,'0');
+        const mm = cap((map.month||'').trim());
+        const yy = (map.year||'').trim();
+        if(wd && dd && mm && yy) return `${wd} ${dd} de ${mm} de ${yy}`;
+      }catch(e){ /* cae al fallback */ }
+      // Fallback manual
+      const dias = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sabado"];
+      const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+      const wd = dias[d.getDay()]||''; const dd=pad(d.getDate()); const mm=meses[d.getMonth()]||''; const yy=d.getFullYear();
       return `${wd} ${dd} de ${mm} de ${yy}`;
     }
 
@@ -331,8 +337,8 @@
       const row=document.createElement('div'); row.className='grid row';
 
       const label=document.createElement('div');
-      // Mostrar SOLO "Lunes 03 de Noviembre de 2025"
       const d = weekDates[i];
+      // Mostrar SOLO "Lunes 03 de Noviembre de 2025" (sin "Fecha")
       label.innerHTML = `<div style="font-weight:700">${fmtLongDate(d)}</div>`;
 
       const eIn=document.createElement('input'); eIn.type='time'; eIn.value=r.e||'';
@@ -409,4 +415,169 @@
         work_date: r.dateKey,
         e: r.e || '',
         s: r.s || '',
-        minutes: overlapMins(parseTime(r.e), parseTime(r
+        minutes: overlapMins(parseTime(r.e), parseTime(r.s)) || 0
+      }));
+      const { error } = await supa.from('work_days').upsert(payload, { onConflict: 'user_id,work_date' });
+      if (error) console.error('Supabase upsert error', error);
+    }
+
+    async function loadWeekFromCloud(){
+      const { data:{ user } } = await supa.auth.getUser();
+      if (!user) return;
+      const from = fmtDate(weekDates[0]), to = fmtDate(weekDates[4]);
+      const { data, error } = await supa
+        .from('work_days')
+        .select('work_date,e,s,minutes')
+        .eq('user_id', user.id)
+        .gte('work_date', from)
+        .lte('work_date', to);
+      if (error){ console.error(error); return; }
+      if (data && data.length){
+        const byDate = Object.fromEntries(data.map(d=>[d.work_date, d]));
+        for (const r of state){
+          if (byDate[r.dateKey]){
+            r.e = byDate[r.dateKey].e || '';
+            r.s = byDate[r.dateKey].s || '';
+          }
+        }
+        // refleja en inputs
+        for(let i=0;i<state.length;i++){ ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s; }
+        recalcWeekTotals();
+      }
+    }
+
+    function populateYearMonth(){
+      const now = new Date(); const thisYear = now.getFullYear();
+      const years=[thisYear-1,thisYear,thisYear+1];
+      selYear.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join(''); selYear.value=thisYear;
+      const months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      selMonth.innerHTML=months.map((m,i)=>`<option value="${i}">${m}</option>`).join(''); selMonth.value=now.getMonth();
+    }
+    function populateWeeksForMonth(){
+      const y=parseInt(selYear.value,10), m=parseInt(selMonth.value,10); const weeks=weeksOfMonth(y,m);
+      if (weeks.length===0){ selWeek.innerHTML='<option>(sin semanas)</option>'; return; }
+      selWeek.innerHTML = weeks.map(d=>{
+        const end = addDays(d,6); const wk=isoWeekKey(d).split('W')[1];
+        const label = `Sem ${wk} · ${pad(d.getDate())}/${pad(d.getMonth()+1)}–${pad(end.getDate())}/${pad(end.getMonth()+1)}`;
+        return `<option value="${d.toISOString()}">${label}</option>`;
+      }).join('');
+      const today=new Date(), todaysMonday=getMonday(today);
+      const match = weeks.find(w=>w.getTime()===toMidnight(todaysMonday).getTime());
+      selWeek.value=(match?match:weeks[0]).toISOString();
+    }
+
+    function rebuildStateForMonday(mon){
+      currentMonday = toMidnight(mon);
+      buildWeekDates(currentMonday);
+      // reconstruye state con fechas reales (L–V)
+      state.length=0;
+      for(let i=0;i<5;i++){
+        state.push({
+          dia: DIAS[i],
+          dateKey: fmtDate(weekDates[i]),
+          e:'', s:'', total:0
+        });
+      }
+      rebuildRows();
+      // carga local
+      fillStateFromLocal();
+      // pinta totales
+      recalcWeekTotals();
+    }
+
+    function loadWeek(isoStr){
+      rebuildStateForMonday(new Date(isoStr));
+      // intenta nube
+      loadWeekFromCloud();
+    }
+
+    selYear.addEventListener('change', ()=>{ populateWeeksForMonth(); loadWeek(selWeek.value); });
+    selMonth.addEventListener('change', ()=>{ populateWeeksForMonth(); loadWeek(selWeek.value); });
+    selWeek.addEventListener('change', ()=>{ loadWeek(selWeek.value); });
+
+    $('btn-prev').addEventListener('click', ()=>{
+      const prev=addDays(currentMonday,-7);
+      selYear.value=prev.getFullYear(); selMonth.value=prev.getMonth(); populateWeeksForMonth();
+      const iso=prev.toISOString(); const opt=[...selWeek.options].find(o=>o.value===iso);
+      selWeek.value=(opt?iso:selWeek.options[0].value); loadWeek(selWeek.value);
+    });
+    $('btn-next').addEventListener('click', ()=>{
+      const next=addDays(currentMonday,7);
+      selYear.value=next.getFullYear(); selMonth.value=next.getMonth(); populateWeeksForMonth();
+      const opts=[...selWeek.options]; const iso=next.toISOString(); const found=opts.find(o=>o.value===iso);
+      selWeek.value=(found?iso:opts[opts.length-1].value); loadWeek(selWeek.value);
+    });
+
+    // CSV export/import ahora por fecha
+    function toCSV(){
+      const header=['Fecha','Día','Entrada','Salida','Total_día'];
+      const lines=[header.join(',')];
+      for(const r of state) lines.push([r.dateKey, r.dia, r.e, r.s, fmtHM(r.total)].join(','));
+      const total=$('total-semana').textContent;
+      const faltan=$('faltan').textContent;
+      lines.push(''); lines.push(['Semana', isoWeekKey(currentMonday)].join(',')); lines.push(['Total semana', total].join(',')); lines.push(['Faltan/Exceso vs 37,5h', faltan].join(','));
+      return lines.join('\n');
+    }
+    $('btn-exportar').addEventListener('click', ()=>{
+      const blob=new Blob([toCSV()], {type:'text/csv;charset=utf-8;'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`horas_${isoWeekKey(currentMonday)}.csv`; a.click(); URL.revokeObjectURL(a.href);
+    });
+    $('btn-importar').addEventListener('click', ()=> $('importar').click());
+    $('importar').addEventListener('change', async (e)=>{
+      const file=e.target.files[0]; if(!file) return;
+      const text=(await file.text()).replace(/^\uFEFF/, ''); // quita BOM si lo hay
+      const lines=text.split(/\r?\n/).filter(l=>l.trim().length);
+      const data=lines.slice(1).filter(l=>!l.startsWith('Semana') && !l.startsWith('Total semana') && !l.startsWith('Faltan/Exceso'));
+      // Espera: CSV en formato Fecha,Día,Entrada,Salida,Total_día
+      const mapByDate = {};
+      for (const line of data){
+        const p=line.split(','); if(p.length<5) continue;
+        const dateKey=p[0]; const e=p[2]||''; const s=p[3]||'';
+        mapByDate[dateKey]={e,s};
+      }
+      for (const r of state){
+        if (mapByDate[r.dateKey]){
+          r.e = mapByDate[r.dateKey].e; r.s = mapByDate[r.dateKey].s;
+          saveDayLocal(r);
+        }
+      }
+      // refresca inputs
+      for(let i=0;i<state.length;i++){ ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s; }
+      recalcWeekTotals();
+      e.target.value='';
+      saveWeekToCloud();
+    });
+
+    // Init
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      // construir selects
+      const now=new Date();
+      (function initYM(){
+        const thisYear=now.getFullYear();
+        selYear.innerHTML=[thisYear-1,thisYear,thisYear+1].map(y=>`<option value="${y}">${y}</option>`).join('');
+        selYear.value=thisYear;
+        const months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        selMonth.innerHTML=months.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+        selMonth.value=now.getMonth();
+      })();
+      (function initWeeks(){
+        const y=parseInt(selYear.value,10), m=parseInt(selMonth.value,10);
+        const weeks=weeksOfMonth(y,m);
+        selWeek.innerHTML = weeks.map(d=>{
+          const end=addDays(d,6); const wk=isoWeekKey(d).split('W')[1];
+          const label=`Sem ${wk} · ${pad(d.getDate())}/${pad(d.getMonth()+1)}–${pad(end.getDate())}/${pad(end.getMonth()+1)}`;
+          return `<option value="${d.toISOString()}">${label}</option>`;
+        }).join('');
+        const today=getMonday(new Date());
+        const match=weeks.find(w=>w.getTime()===today.getTime());
+        selWeek.value=(match?match:weeks[0]).toISOString();
+      })();
+      // estado semana
+      rebuildStateForMonday(new Date(selWeek.value));
+      // auth callbacks y estado
+      await handleAuthRedirect();
+      await refreshAuthUI();
+    });
+  </script>
+</body>
+</html>
