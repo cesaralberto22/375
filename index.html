@@ -45,12 +45,6 @@
     .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
     .dot.tr{background:#22c55e}.dot.va{background:#3b82f6}.dot.ap{background:#f59e0b}.dot.op{background:#ef4444}
 
-    /* Modal recuperación contraseña: oculto por defecto */
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:2000}
-    .modal .box{background:#0f172a;border:1px solid #1f2937;border-radius:16px;padding:20px;max-width:420px;width:90%;box-shadow:0 8px 30px rgba(0,0,0,.5)}
-    .modal h3{margin:0 0 8px}
-    .modal .msg{font-size:13px;color:#94a3b8;margin-bottom:10px}
-
     @media (max-width:900px){
       .grid{grid-template-columns:1fr 1fr 1fr 1fr 1fr}
       .head{display:none}
@@ -166,17 +160,17 @@
     </div>
   </div>
 
-  <!-- Modal recuperación contraseña (SIEMPRE oculto de inicio) -->
-  <div id="modal-reset" class="modal" aria-hidden="true">
+  <!-- Modal recuperación contraseña -->
+  <div id="modal-reset" class="modal">
     <div class="box">
-      <h3>Nueva contraseña</h3>
-      <p class="msg">Has llegado desde el correo de recuperación. Introduce tu nueva contraseña.</p>
+      <h3 style="margin:0 0 8px">Nueva contraseña</h3>
+      <p class="msg info" style="margin:0 0 10px">Has llegado desde el correo de recuperación. Introduce tu nueva contraseña.</p>
       <input id="new-pass" type="password" placeholder="Nueva contraseña" style="width:100%;margin-bottom:8px">
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button id="btn-cancel-reset">Cancelar</button>
         <button id="btn-do-reset" class="primary">Actualizar</button>
       </div>
-      <div id="reset-msg" class="msg"></div>
+      <div id="reset-msg" class="msg info" style="margin-top:8px"></div>
     </div>
   </div>
 
@@ -192,16 +186,16 @@
     const $ = id => document.getElementById(id);
     const setMsg = (t,ty='info') => { const el=$('auth-msg'); el.textContent=t; el.className=`msg ${ty}`; };
     const setResetMsg = (t,ty='info') => { const el=$('reset-msg'); el.textContent=t; el.className=`msg ${ty}`; };
-    const showModal = (id,show)=>{ const el=$(id); if(!el) return; el.style.display=show?'flex':'none'; el.setAttribute('aria-hidden', show?'false':'true'); };
+    const showModal = (id,show)=>{ $(id).style.display = show?'flex':'none'; };
 
-    // Modal SOLO en PASSWORD_RECOVERY
-    supa.auth.onAuthStateChange((event)=>{
+    // Abrir modal SOLO cuando Supabase emite PASSWORD_RECOVERY
+    supa.auth.onAuthStateChange((event, _session)=>{
       if (event === 'PASSWORD_RECOVERY') {
         showModal('modal-reset', true);
       }
-      if (['SIGNED_IN','SIGNED_OUT','USER_UPDATED','TOKEN_REFRESHED'].includes(event)) {
+      // refrescamos UI en cualquier evento relevante
+      if (['SIGNED_IN','TOKEN_REFRESHED','SIGNED_OUT','USER_UPDATED'].includes(event)) {
         refreshAuthUI();
-        if (event !== 'PASSWORD_RECOVERY') showModal('modal-reset', false);
       }
     });
 
@@ -256,6 +250,7 @@
           const { error } = await supa.auth.exchangeCodeForSession(href);
           if (error) setMsg('Error de inicio: ' + error.message, 'err');
         } finally {
+          // Limpia parámetros para evitar falsos positivos futuros
           window.history.replaceState({}, document.title, REDIRECT_URL);
         }
       }
@@ -566,7 +561,7 @@
         const dateKey=p[0], eIn=p[2]||'', eOut=p[3]||'';
         const d=new Date(dateKey+'T00:00:00'); if (isNaN(d)) continue;
         if (d<first || d>last) continue;
-        db[dateKey]={e:eIn,s=eOut,k:null}; changed.push(dateKey);
+        db[dateKey]={e:eIn,s:eOut,k:null}; changed.push(dateKey);
       }
       saveLocal(db); fillStateFromLocal();
       for(let i=0;i<state.length;i++){
@@ -613,17 +608,6 @@
       }
       calDays.innerHTML = html;
     }
-
-    // Botones modal
-    $('btn-cancel-reset').addEventListener('click', ()=> showModal('modal-reset', false));
-    $('btn-do-reset').addEventListener('click', async ()=>{
-      const np = ($('new-pass').value||'').trim();
-      if (!np){ setResetMsg('Pon una nueva contraseña','warn'); return; }
-      setResetMsg('Actualizando contraseña...','info');
-      const { error } = await supa.auth.updateUser({ password: np });
-      if (error) setResetMsg('Error al actualizar: ' + error.message, 'err');
-      else { setResetMsg('Contraseña actualizada','ok'); setTimeout(()=>showModal('modal-reset',false),1000); }
-    });
 
     // Init
     document.addEventListener('DOMContentLoaded', async ()=>{
