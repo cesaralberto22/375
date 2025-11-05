@@ -15,17 +15,13 @@
     header{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     .flag{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden}
     .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-    select,button,input[type=email],input[type=password]{padding:9px 12px;border-radius:10px;border:1px solid #1f2937;background:#0b1220;color:var(--fg);font-weight:600}
+    select,button,input[type=email],input[type=password],input[type=time]{padding:9px 12px;border-radius:10px;border:1px solid #1f2937;background:#0b1220;color:var(--fg);font-weight:600}
     button.primary{background:linear-gradient(180deg,#0ea5e9,#0284c7);color:white;border:1px solid #0b83b7}
-    .grid{display:grid;grid-template-columns:240px 1fr 1fr 140px 160px;gap:8px;align-items:center;margin-top:10px}
+    .grid{display:grid;grid-template-columns:240px 1fr 1fr 140px 180px;gap:8px;align-items:center;margin-top:10px}
     .head{color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
     .row{padding:8px;border-radius:12px}
     .row:nth-child(even){background:rgba(148,163,184,.06)}
-    input[type=time]{width:100%;padding:10px 12px;border:1px solid #1f2937;border-radius:10px;background:#0b1220;color:var(--fg)}
     .totdia{font-weight:700}
-    .kinds{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-    .kind{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #1f2937;border-radius:10px;cursor:pointer;background:#0b1220}
-    .kind.active{background:#0b1e2f;border-color:#0b3a57}
     .totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}
     .kpi{background:rgba(148,163,184,.06);border:1px solid #1f2937;border-radius:14px;padding:14px}
     .kpi .lbl{font-size:12px;color:#94a3b8}
@@ -114,7 +110,7 @@
       </header>
 
       <div class="grid head" style="margin-top:6px">
-        <div>Día</div><div>Entrada</div><div>Salida</div><div>Total día</div><div>VA / AP / OP</div>
+        <div>Día</div><div>Entrada</div><div>Salida</div><div>Total día</div><div>Tipo (TR/VA/AP/OP)</div>
       </div>
       <div id="rows"></div>
 
@@ -192,14 +188,15 @@
     const setResetMsg = (t,ty='info') => { const el=$('reset-msg'); el.textContent=t; el.className=`msg ${ty}`; };
     const showModal = (id,show)=>{ $(id).style.display = show?'flex':'none'; };
 
-    document.querySelectorAll('.tab').forEach(t=>{
-      t.addEventListener('click', ()=>{
-        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-        t.classList.add('active');
-        const tab = t.dataset.tab;
-        document.querySelectorAll('.auth-views>div').forEach(x=>x.classList.remove('active'));
-        if (tab==='link') $('view-link').classList.add('active'); else $('view-pwd').classList.add('active');
-      });
+    // Abrir modal SOLO cuando Supabase emite PASSWORD_RECOVERY
+    supa.auth.onAuthStateChange((event, _session)=>{
+      if (event === 'PASSWORD_RECOVERY') {
+        showModal('modal-reset', true);
+      }
+      // refrescamos UI en cualquier evento relevante
+      if (['SIGNED_IN','TOKEN_REFRESHED','SIGNED_OUT','USER_UPDATED'].includes(event)) {
+        refreshAuthUI();
+      }
     });
 
     const who=$('whoami'), btnLogout=$('btn-logout');
@@ -208,7 +205,6 @@
       if (user){ who.textContent=`Sesión: ${user.email}`; btnLogout.style.display='inline-block'; setMsg('Sesión iniciada','ok'); loadWeekFromCloud(); }
       else { who.textContent='Sin sesión'; btnLogout.style.display='none'; setMsg('No has iniciado sesión','info'); }
     }
-    supa.auth.onAuthStateChange(()=>{ refreshAuthUI(); });
 
     $('btn-login-link').addEventListener('click', async ()=>{
       const mail=($('email-link').value||'').trim(); if(!mail){ setMsg('Pon tu email','warn'); return; }
@@ -245,19 +241,20 @@
 
     btnLogout.addEventListener('click', async ()=>{ await supa.auth.signOut(); setMsg('Sesión cerrada','info'); refreshAuthUI(); });
 
+    // Intercambio de código si venimos de enlace mágico / oauth, y limpiar URL
     async function handleAuthRedirect(){
-      const href=window.location.href; const hasCode=href.includes('code=')||href.includes('access_token=');
-      if (hasCode){ try{ const { error } = await supa.auth.exchangeCodeForSession(href); if (error) setMsg('Error de inicio: '+error.message,'err'); } finally { window.history.replaceState({},document.title,REDIRECT_URL); } }
-      if (href.includes('type=recovery')) showModal('modal-reset', true);
+      const href=window.location.href;
+      const hasCode = href.includes('code=') || href.includes('access_token=');
+      if (hasCode){
+        try{
+          const { error } = await supa.auth.exchangeCodeForSession(href);
+          if (error) setMsg('Error de inicio: ' + error.message, 'err');
+        } finally {
+          // Limpia parámetros para evitar falsos positivos futuros
+          window.history.replaceState({}, document.title, REDIRECT_URL);
+        }
+      }
     }
-    $('btn-cancel-reset').addEventListener('click', ()=> showModal('modal-reset', false));
-    $('btn-do-reset').addEventListener('click', async ()=>{
-      const np=($('new-pass').value||'').trim(); if(!np){ setResetMsg('Pon una nueva contraseña','warn'); return; }
-      setResetMsg('Actualizando contraseña...','info');
-      const { error } = await supa.auth.updateUser({ password: np });
-      if (error) setResetMsg('Error al actualizar: '+error.message,'err');
-      else { setResetMsg('Contraseña actualizada','ok'); setTimeout(()=>showModal('modal-reset',false),1000); refreshAuthUI(); }
-    });
 
     // === Lógica ===
     const TARGET_MIN = Math.round(37.5*60);
@@ -306,7 +303,7 @@
       const db=loadLocal();
       for(const r of state){
         const rec=db[r.dateKey]||{e:'',s:'',k:null};
-        r.e=rec.e||''; r.s=rec.s||''; r.kind=rec.k||null;
+        r.e=rec.e||''; r.s=rec.s||''; r.kind=rec.k||null; // null/'' => TR
       }
     }
     function saveDayLocal(r){
@@ -315,12 +312,15 @@
       saveLocal(db);
     }
 
-    // UI filas
-    function makeKindButton(code,labelText){
-      const el=document.createElement('button');
-      el.type='button'; el.className='kind'; el.dataset.code=code;
-      el.innerHTML=`<input type="checkbox" aria-label="${labelText}" /> <span>${labelText}</span>`;
-      return el;
+    function makeKindSelect(){
+      const sel=document.createElement('select');
+      sel.innerHTML = `
+        <option value="">— (TR)</option>
+        <option value="VA">VA</option>
+        <option value="AP">AP</option>
+        <option value="OP">OP</option>
+      `;
+      return sel;
     }
 
     function makeRow(i){
@@ -335,42 +335,33 @@
       const eOut=document.createElement('input'); eOut.type='time'; eOut.value=r.s||'';
       const td=document.createElement('div'); td.className='totdia'; td.textContent=r.total?fmtHM(r.total):'—';
 
-      const kinds=document.createElement('div'); kinds.className='kinds';
-      const bVA=makeKindButton('VA','VA'), bAP=makeKindButton('AP','AP'), bOP=makeKindButton('OP','OP');
-      kinds.append(bVA,bAP,bOP);
+      const kindSel = makeKindSelect();
+      kindSel.value = (r.kind||''); // '' == TR
 
-      function updateKindButtons(){
-        [bVA,bAP,bOP].forEach(b=>{
-          const active=(r.kind===b.dataset.code);
-          b.classList.toggle('active', active);
-          b.querySelector('input').checked=active;
-        });
+      function applyKindUI(){
+        const isSpecial = (kindSel.value==='VA'||kindSel.value==='AP'||kindSel.value==='OP');
+        eIn.style.display = isSpecial ? 'none' : 'block';
+        eOut.style.display = isSpecial ? 'none' : 'block';
       }
 
-      function setKind(newKind){
-        r.kind = (r.kind===newKind) ? null : newKind; // toggle
-        if (r.kind){ eIn.style.display='none'; eOut.style.display='none'; r.e=''; r.s=''; }
-        else { eIn.style.display='block'; eOut.style.display='block'; }
+      kindSel.addEventListener('change', ()=>{
+        r.kind = kindSel.value || null; // '' -> TR (null)
+        if (r.kind){ r.e=''; r.s=''; }
         saveDayLocal(r);
         recalcWeekTotals();
-        updateKindButtons();
         renderCalendar();
-        // nube (debounce)
-        clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud, 300);
-      }
+        clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud,300);
+        if (!r.kind){ eIn.value=r.e||''; eOut.value=r.s||''; }
+        applyKindUI();
+      });
 
-      bVA.addEventListener('click', ()=> setKind('VA'));
-      bAP.addEventListener('click', ()=> setKind('AP'));
-      bOP.addEventListener('click', ()=> setKind('OP'));
+      eIn.addEventListener('input', ()=>{ r.e=eIn.value; r.kind=null; kindSel.value=''; saveDayLocal(r); recalcWeekTotals(); renderCalendar(); clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud,300); });
+      eOut.addEventListener('input', ()=>{ r.s=eOut.value; r.kind=null; kindSel.value=''; saveDayLocal(r); recalcWeekTotals(); renderCalendar(); clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud,300); });
 
-      eIn.addEventListener('input', ()=>{ r.e=eIn.value; r.kind=null; saveDayLocal(r); recalcWeekTotals(); updateKindButtons(); renderCalendar(); clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud,300); });
-      eOut.addEventListener('input', ()=>{ r.s=eOut.value; r.kind=null; saveDayLocal(r); recalcWeekTotals(); updateKindButtons(); renderCalendar(); clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud,300); });
+      applyKindUI();
 
-      if (r.kind){ eIn.style.display='none'; eOut.style.display='none'; }
-      updateKindButtons();
-
-      row.appendChild(label); row.appendChild(eIn); row.appendChild(eOut); row.appendChild(td); row.appendChild(kinds);
-      rowsEl.appendChild(row); ui[i]={td,eIn,eOut,kinds};
+      row.appendChild(label); row.appendChild(eIn); row.appendChild(eOut); row.appendChild(td); row.appendChild(kindSel);
+      rowsEl.appendChild(row); ui[i]={td,eIn,eOut,kindSel};
     }
 
     function rebuildRows(){ rowsEl.innerHTML=''; ui.length=0; for(let i=0;i<state.length;i++) makeRow(i); }
@@ -379,8 +370,9 @@
       for(let i=0;i<state.length;i++){
         const r=state[i];
         let mins=0;
-        if (r.kind==='VA' || r.kind==='AP' || r.kind==='OP'){ mins = 7.5*60; }
-        else {
+        if (r.kind){ // VA/AP/OP
+          mins = 7.5*60;
+        }else{
           const m=overlapMins(parseTime(r.e), parseTime(r.s));
           mins = m || 0;
         }
@@ -426,20 +418,18 @@
         const byDate=Object.fromEntries(data.map(d=>[d.work_date,d]));
         for(const r of state){
           const d=byDate[r.dateKey]; if (!d) continue;
-          // Preferimos el 'kind' del servidor si viene
           if (d.kind==='VA' || d.kind==='AP' || d.kind==='OP'){
             r.kind=d.kind; r.e=''; r.s='';
           }else{
             r.kind=null; r.e=d.e||''; r.s=d.s||'';
           }
-          // persistimos localmente el estado traído
           saveDayLocal(r);
         }
-        // refleja UI
         for(let i=0;i<state.length;i++){
           ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s;
           ui[i].eIn.style.display = state[i].kind ? 'none' : 'block';
           ui[i].eOut.style.display = state[i].kind ? 'none' : 'block';
+          ui[i].kindSel.value = state[i].kind || '';
         }
         recalcWeekTotals(); renderCalendar();
       }
@@ -475,6 +465,7 @@
         ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s;
         ui[i].eIn.style.display = state[i].kind ? 'none' : 'block';
         ui[i].eOut.style.display = state[i].kind ? 'none' : 'block';
+        ui[i].kindSel.value = state[i].kind || '';
       }
       recalcWeekTotals(); renderCalendar();
     }
@@ -498,7 +489,7 @@
       selWeek.value=(found?iso:opts[opts.length-1].value); loadWeek(selWeek.value);
     });
 
-    // === CSV Semana === (manteniendo formato)
+    // === CSV Semana ===
     function toCSV(){
       const header=['Fecha','Día','Entrada','Salida','Total_día'];
       const lines=[header.join(',')];
@@ -520,7 +511,10 @@
       const mapByDate={};
       for(const line of data){ const p=line.split(','); if(p.length<5) continue; const dateKey=p[0], e2=p[2]||'', s2=p[3]||''; mapByDate[dateKey]={e:e2,s:s2}; }
       for(const r of state){ if(mapByDate[r.dateKey]){ r.e=mapByDate[r.dateKey].e; r.s=mapByDate[r.dateKey].s; r.kind=null; saveDayLocal(r);} }
-      for(let i=0;i<state.length;i++){ ui[i].eIn.style.display='block'; ui[i].eOut.style.display='block'; ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s; }
+      for(let i=0;i<state.length;i++){
+        ui[i].kindSel.value=''; ui[i].eIn.style.display='block'; ui[i].eOut.style.display='block';
+        ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s;
+      }
       recalcWeekTotals(); e.target.value=''; saveWeekToCloud(); renderCalendar();
     });
 
@@ -570,7 +564,10 @@
         db[dateKey]={e:eIn,s:eOut,k:null}; changed.push(dateKey);
       }
       saveLocal(db); fillStateFromLocal();
-      for(let i=0;i<state.length;i++){ ui[i].eIn.style.display='block'; ui[i].eOut.style.display='block'; ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s; }
+      for(let i=0;i<state.length;i++){
+        ui[i].kindSel.value=''; ui[i].eIn.style.display='block'; ui[i].eOut.style.display='block';
+        ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s;
+      }
       recalcWeekTotals(); e.target.value=''; renderCalendar();
       const { data:{ user } } = await supa.auth.getUser();
       if (user && changed.length){
@@ -591,7 +588,7 @@
       if (db.k==='AP') return 'ap';
       if (db.k==='OP') return 'op';
       const mins = overlapMins(parseTime(db.e||''), parseTime(db.s||''))||0;
-      return mins>0 ? 'tr' : null;
+      return mins>0 ? 'tr' : null; // TR si hay tiempo trabajado
     }
 
     function renderCalendar(){
@@ -628,7 +625,8 @@
         selWeek.value=(match?match:weeks[0]).toISOString();
       })();
       rebuildStateForMonday(new Date(selWeek.value));
-      await handleAuthRedirect(); await refreshAuthUI();
+      await handleAuthRedirect();
+      await refreshAuthUI();
       renderCalendar();
     });
   </script>
