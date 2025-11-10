@@ -5,42 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Registro de Jornada 37,5 h - Principado de Asturias - DGDIA</title>
   <style>
-    :root{--bg:#0b1220;--card:#0f172a;--muted:#94a3b8;--fg:#e2e8f0;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444;--blue:#1f8dd6}
+    :root{--bg:#0b1220;--card:#0f172a;--muted:#94a3b8;--fg:#e2e8f0;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444}
     *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:#0b1220;color:var(--fg)}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--fg)}
     .wrap{max-width:1100px;margin:0 auto;padding:20px}
-    .card{background:#0f172a;border:1px solid #1f2937;border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .card{background:var(--card);border:1px solid #1f2937;border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
     h1{margin:0;font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px}
-    .sub{color:#94a3b8;font-size:13px;margin-top:6px}
+    .sub{color:var(--muted);font-size:13px;margin-top:6px}
     header{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     .flag{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden}
     .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
     select,button,input[type=email],input[type=password],input[type=time]{padding:9px 12px;border-radius:10px;border:1px solid #1f2937;background:#0b1220;color:var(--fg);font-weight:600}
     button.primary{background:linear-gradient(180deg,#0ea5e9,#0284c7);color:white;border:1px solid #0b83b7}
-
-    /* GRID principal */
     .grid{display:grid;grid-template-columns:240px 1fr 1fr 140px 180px;gap:8px;align-items:center;margin-top:10px}
-    .head{color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+    .head{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
     .row{padding:8px;border-radius:12px}
     .row:nth-child(even){background:rgba(148,163,184,.06)}
     .totdia{font-weight:700}
     .totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}
     .kpi{background:rgba(148,163,184,.06);border:1px solid #1f2937;border-radius:14px;padding:14px}
-    .kpi .lbl{font-size:12px;color:#94a3b8}
+    .kpi .lbl{font-size:12px;color:var(--muted)}
     .kpi .val{font-size:18px;font-weight:800;margin-top:6px}
     .kpi.ok .val{color:var(--ok)}.kpi.warn .val{color:var(--warn)}.kpi.err .val{color:var(--err)}
     .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
-    .hint{color:#94a3b8;font-size:12px;margin-top:8px}
+    .hint{color:var(--muted);font-size:12px;margin-top:8px}
 
-    /* AUTH UI */
-    .auth-box{display:flex;flex-direction:column;gap:8px;min-width:330px}
+    /* auth */
+    .auth-box{display:flex;flex-direction:column;gap:8px;min-width:300px}
     .auth-tabs{display:flex;gap:8px;margin-top:2px}
     .tab{padding:6px 10px;border:1px solid #1f2937;border-radius:10px;cursor:pointer}
     .tab.active{background:#0b1e2f}
     .auth-views>div{display:none;margin-top:8px;gap:8px;align-items:center;flex-wrap:wrap}
     .auth-views>div.active{display:flex}
 
-    /* Mini calendario */
+    /* mini calendar */
     .cal-wrap{margin-top:18px}
     .cal-head{display:flex;justify-content:space-between;align-items:center;margin:8px 0;color:var(--muted);font-size:13px}
     .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
@@ -55,14 +53,14 @@
     .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
     .dot.tr{background:#22c55e}.dot.va{background:#3b82f6}.dot.ap{background:#f59e0b}.dot.op{background:#ef4444}
 
-    /* safety rule: if any stray element with this id exists, keep hidden */
+    /* safety: proxy (hidden always) */
     #modal-reset-proxy{display:none!important}
 
-    /* Modal template styling (used when cloned) */
+    /* modal styles (will only be used for cloned template) */
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:2000}
-    .modal .box{background:#0f172a;border:1px solid #1f2937;border-radius:16px;padding:20px;max-width:420px;width:90%;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+    .modal .box{background:var(--card);border:1px solid #1f2937;border-radius:16px;padding:20px;max-width:420px;width:90%;box-shadow:0 8px 30px rgba(0,0,0,.5)}
     .modal h3{margin:0 0 8px}
-    .modal .msg{font-size:13px;color:#94a3b8;margin-bottom:10px}
+    .modal .msg{font-size:13px;color:var(--muted);margin-bottom:10px}
 
     @media (max-width:900px){
       .grid{grid-template-columns:1fr 1fr 1fr 1fr 1fr}
@@ -76,10 +74,10 @@
       <header>
         <div>
           <h1>
-            <span class="flag" title="Asturias" aria-label="Bandera de Asturias">
+            <span class="flag" title="Asturias">
               <svg viewBox="0 0 110 110" width="28" height="28" role="img" aria-hidden="true">
-                <defs><clipPath id="c"><circle cx="55" cy="55" r="55"/></clipPath></defs>
-                <g clip-path="url(#c)">
+                <defs><clipPath id="clip-ast"><circle cx="55" cy="55" r="55"/></clipPath></defs>
+                <g clip-path="url(#clip-ast)">
                   <rect width="110" height="110" fill="#1f8dd6"/>
                   <g fill="#ffd700"><circle cx="55" cy="28" r="6"/><rect x="51" y="28" width="8" height="64"/><rect x="25" y="56" width="60" height="12"/></g>
                 </g>
@@ -93,7 +91,7 @@
         <!-- AUTH -->
         <div class="auth-box">
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <span id="whoami" style="color:#94a3b8;">Sin sesión</span>
+            <span id="whoami" style="color:var(--muted);">Sin sesión</span>
             <button id="btn-logout" style="display:none;">Salir</button>
           </div>
 
@@ -131,7 +129,7 @@
       <div class="grid head" style="margin-top:6px">
         <div>Día</div><div>Entrada</div><div>Salida</div><div>Total día</div><div>Tipo (TR/VA/AP/OP)</div>
       </div>
-      <div id="rows"></div>
+      <div id="rows" aria-live="polite"></div>
 
       <div class="totals">
         <div class="kpi" id="kpi-total">
@@ -150,11 +148,11 @@
 
       <div class="actions">
         <input type="file" id="importar" accept=".csv" style="display:none" />
-        <button class="secondary" id="btn-importar">Cargar semana (CSV)</button>
+        <button id="btn-importar" class="secondary">Cargar semana (CSV)</button>
         <button id="btn-exportar">Guardar semana (CSV)</button>
 
         <input type="file" id="importar-mes" accept=".csv" style="display:none" />
-        <button class="secondary" id="btn-importar-mes">Cargar mes (CSV)</button>
+        <button id="btn-importar-mes" class="secondary">Cargar mes (CSV)</button>
         <button id="btn-exportar-mes">Guardar mes (CSV)</button>
       </div>
 
@@ -176,10 +174,10 @@
     </div>
   </div>
 
-  <!-- safety proxy id — nunca debe renderizarse visible; si aparece algo con este id, queda oculto -->
+  <!-- safety hidden node -->
   <div id="modal-reset-proxy" aria-hidden="true"></div>
 
-  <!-- Modal HTML dentro de template: no renderiza hasta que JS lo clone -->
+  <!-- modal template (not rendered until needed) -->
   <template id="tpl-modal-reset">
     <div class="modal" id="modal-reset" role="dialog" aria-modal="true">
       <div class="box">
@@ -197,132 +195,135 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script>
-    /* ===== Helpers ===== */
-    const $ = id => document.getElementById(id);
-    const setMsg = (t,ty='info') => { const el=$('auth-msg'); if(el){ el.textContent=t; el.className=`msg ${ty}`; } };
-    const setResetMsg = (t,ty='info') => { const el=$('reset-msg'); if(el){ el.textContent=t; el.className=`msg ${ty}`; } };
-
-    /* ===== Supabase init ===== */
+  (function(){
+    'use strict';
+    // --- Supabase config (no cambios) ---
     const SUPABASE_URL  = "https://izkwmbtyzvdiwfvenzbb.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6a3dtYnR5enZkaXdmdmVuemJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzU1ODEsImV4cCI6MjA3NzgxMTU4MX0.jrJNclTJO3uy5WP6q5i01aQbiryQuTWGE1KIUyowAhw";
     const REDIRECT_URL  = window.location.origin;
-    const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
+    const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
 
-    /* Insert modal only when needed (avoid any rendering at load) */
+    // --- helpers DOM ---
+    const $ = id => document.getElementById(id);
+    const safeSetText = (id, t) => { const el=$(id); if(el) el.textContent = t; };
+    const safeSetClass = (id, clsAdd, clsRem=[]) => { const el=$(id); if(!el) return; clsRem.forEach(c=>el.classList.remove(c)); if (clsAdd) el.classList.add(clsAdd); };
+
+    // --- auth UI ---
+    function setMsg(t,ty='info'){ const el=$('auth-msg'); if(!el) return; el.textContent=t; el.className=`msg ${ty}`; }
+    function setResetMsg(t,ty='info'){ const el=$('reset-msg'); if(!el) return; el.textContent=t; el.className=`msg ${ty}`; }
+
+    // Modal creation on demand
     function createModalIfNeeded(){
-      if ($('modal-reset')) return; // ya creado
-      const tpl = $('tpl-modal-reset'); if(!tpl) return;
+      if ($('modal-reset')) return;
+      const tpl = $('tpl-modal-reset');
+      if (!tpl) return;
       const clone = tpl.content.cloneNode(true);
       document.body.appendChild(clone);
-      // attach handlers
-      $('btn-cancel-reset')?.addEventListener('click', ()=> { removeModal(); });
-      $('btn-do-reset')?.addEventListener('click', async ()=>{
-        const np = ($('new-pass').value||'').trim();
+      // bind handlers
+      const btnCancel = $('btn-cancel-reset');
+      const btnDo = $('btn-do-reset');
+      if (btnCancel) btnCancel.addEventListener('click', removeModal);
+      if (btnDo) btnDo.addEventListener('click', async ()=>{
+        const np = ($('new-pass')?.value||'').trim();
         if (!np){ setResetMsg('Pon una nueva contraseña','warn'); return; }
         setResetMsg('Actualizando contraseña...','info');
-        const { error } = await supa.auth.updateUser({ password: np });
-        if (error) setResetMsg('Error al actualizar: ' + error.message, 'err');
-        else { setResetMsg('Contraseña actualizada','ok'); setTimeout(()=>removeModal(),1000); }
+        try{
+          const { error } = await supa.auth.updateUser({ password: np });
+          if (error) setResetMsg('Error al actualizar: ' + error.message, 'err');
+          else { setResetMsg('Contraseña actualizada','ok'); setTimeout(removeModal,900); }
+        }catch(err){ setResetMsg('Error: '+(err.message||err),'err'); console.error(err); }
       });
     }
-    function removeModal(){
-      const m = $('modal-reset');
-      if (!m) return;
-      m.remove();
-      // limpiar proxy si existe
-      const proxy = $('modal-reset-proxy'); if(proxy) proxy.setAttribute('aria-hidden','true');
-    }
+    function showModal(){ const m=$('modal-reset'); if(m){ m.style.display='flex'; m.setAttribute('aria-hidden','false'); } }
+    function removeModal(){ const m=$('modal-reset'); if(m) m.remove(); const proxy = $('modal-reset-proxy'); if(proxy) proxy.setAttribute('aria-hidden','true'); }
 
-    /* Tabs behaviour */
-    document.addEventListener('click', (ev)=>{
-      const t = ev.target.closest('.tab'); if(!t) return;
-      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-      t.classList.add('active');
-      const tab = t.dataset.tab;
-      document.querySelectorAll('.auth-views>div').forEach(x=>x.classList.remove('active'));
-      if (tab==='link') $('view-link').classList.add('active'); else $('view-pwd').classList.add('active');
+    // Supabase auth events: only show modal on PASSWORD_RECOVERY
+    supa.auth.onAuthStateChange((event) => {
+      try{
+        if (event === 'PASSWORD_RECOVERY'){
+          createModalIfNeeded();
+          showModal();
+        } else {
+          // hide if present
+          const m = $('modal-reset'); if (m) { m.style.display='none'; m.setAttribute('aria-hidden','true'); }
+        }
+        if (['SIGNED_IN','SIGNED_OUT','USER_UPDATED','TOKEN_REFRESHED'].includes(event)) refreshAuthUI();
+      }catch(e){ console.error('auth event handler error', e); }
     });
 
-    const who=$('whoami'), btnLogout=$('btn-logout');
-
-    async function refreshAuthUI(){
-      const { data:{ user } } = await supa.auth.getUser();
-      if (user){ if(who) who.textContent=`Sesión: ${user.email}`; if(btnLogout) btnLogout.style.display='inline-block'; setMsg('Sesión iniciada','ok'); loadWeekFromCloud(); }
-      else { if(who) who.textContent='Sin sesión'; if(btnLogout) btnLogout.style.display='none'; setMsg('No has iniciado sesión','info'); }
-    }
-
-    // Handle Supabase auth events. When PASSWORD_RECOVERY arrives, create+show modal
-    supa.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        createModalIfNeeded();
-        // ensure modal present and visible
-        const m = $('modal-reset'); if (m) { m.style.display='flex'; m.setAttribute('aria-hidden','false'); }
-      } else {
-        // hide modal on other events
-        const m = $('modal-reset'); if (m) { m.style.display='none'; m.setAttribute('aria-hidden','true'); }
-      }
-      if (['SIGNED_IN','SIGNED_OUT','USER_UPDATED','TOKEN_REFRESHED'].includes(event)) {
-        refreshAuthUI();
-      }
-    });
-
-    /* Auth UI actions */
+    // auth actions
     $('btn-login-link')?.addEventListener('click', async ()=>{
-      const mail=($('email-link').value||'').trim(); if(!mail){ setMsg('Pon tu email','warn'); return; }
+      const mail = ($('email-link')?.value||'').trim();
+      if (!mail){ setMsg('Pon tu email','warn'); return; }
       setMsg('Enviando enlace...','info');
-      const { error } = await supa.auth.signInWithOtp({ email:mail, options:{ emailRedirectTo: REDIRECT_URL } });
-      if (error) setMsg('Error enviando enlace: '+error.message,'err'); else setMsg('Te envié un enlace. Ábrelo desde este mismo navegador.','ok');
+      try{
+        const { error } = await supa.auth.signInWithOtp({ email:mail, options:{ emailRedirectTo: REDIRECT_URL } });
+        if (error) setMsg('Error enviando enlace: '+error.message,'err'); else setMsg('Te envié un enlace. Ábrelo desde este mismo navegador.','ok');
+      }catch(err){ setMsg('Error: '+(err.message||err),'err'); console.error(err); }
     });
 
     $('btn-login-pwd')?.addEventListener('click', async ()=>{
-      const mail=($('email-pwd').value||'').trim(), pass=($('pass-pwd').value||'').trim();
+      const mail=($('email-pwd')?.value||'').trim(), pass=($('pass-pwd')?.value||'').trim();
       if(!mail||!pass){ setMsg('Email y contraseña son obligatorios','warn'); return; }
       setMsg('Iniciando sesión...','info');
-      const { error } = await supa.auth.signInWithPassword({ email:mail, password:pass });
-      if (error) setMsg('Error al iniciar sesión: '+error.message,'err'); else setMsg('Sesión iniciada','ok');
-      refreshAuthUI();
+      try{
+        const { error } = await supa.auth.signInWithPassword({ email:mail, password:pass });
+        if (error) setMsg('Error al iniciar sesión: '+error.message,'err'); else setMsg('Sesión iniciada','ok');
+        refreshAuthUI();
+      }catch(err){ setMsg('Error: '+(err.message||err),'err'); console.error(err); }
     });
 
     $('btn-register-pwd')?.addEventListener('click', async ()=>{
-      const mail=($('email-pwd').value||'').trim(), pass=($('pass-pwd').value||'').trim();
+      const mail=($('email-pwd')?.value||'').trim(), pass=($('pass-pwd')?.value||'').trim();
       if(!mail||!pass){ setMsg('Email y contraseña son obligatorios','warn'); return; }
       setMsg('Creando cuenta...','info');
-      const { data, error } = await supa.auth.signUp({ email:mail, password:pass, options:{ emailRedirectTo: REDIRECT_URL } });
-      if (error) setMsg('Error al registrarse: '+error.message,'err');
-      else { if (data.user?.identities?.length===0) setMsg('El correo ya está registrado. Inicia sesión.','warn'); else setMsg('Cuenta creada. Revisa tu email si es necesario confirmar.','ok'); }
-      refreshAuthUI();
+      try{
+        const { data, error } = await supa.auth.signUp({ email:mail, password:pass, options:{ emailRedirectTo: REDIRECT_URL } });
+        if (error) setMsg('Error al registrarse: '+error.message,'err');
+        else { if (data.user?.identities?.length===0) setMsg('Correo ya registrado. Inicia sesión.','warn'); else setMsg('Cuenta creada. Revisa tu email.','ok'); }
+        refreshAuthUI();
+      }catch(err){ setMsg('Error: '+(err.message||err),'err'); console.error(err); }
     });
 
     $('btn-forgot')?.addEventListener('click', async ()=>{
-      const mail=($('email-pwd').value||'').trim(); if(!mail){ setMsg('Pon tu email para recuperar la contraseña','warn'); return; }
+      const mail=($('email-pwd')?.value||'').trim();
+      if(!mail){ setMsg('Pon tu email para recuperar la contraseña','warn'); return; }
       setMsg('Enviando email de recuperación...','info');
-      const { error } = await supa.auth.resetPasswordForEmail(mail, { redirectTo: REDIRECT_URL });
-      if (error) setMsg('Error al enviar recuperación: '+error.message,'err'); else setMsg('Te envié un email para recuperar la contraseña.','ok');
+      try{
+        const { error } = await supa.auth.resetPasswordForEmail(mail, { redirectTo: REDIRECT_URL });
+        if (error) setMsg('Error al enviar recuperación: '+error.message,'err'); else setMsg('Te envié un email para recuperar la contraseña.','ok');
+      }catch(err){ setMsg('Error: '+(err.message||err),'err'); console.error(err); }
     });
 
-    btnLogout?.addEventListener('click', async ()=>{ await supa.auth.signOut(); setMsg('Sesión cerrada','info'); refreshAuthUI(); });
+    $('btn-logout')?.addEventListener('click', async ()=>{ try{ await supa.auth.signOut(); setMsg('Sesión cerrada','info'); refreshAuthUI(); }catch(e){ console.error(e); }});
 
-    // exchange code if we came from magic link, then clean url
+    // exchange code for session if magic link / oauth
     async function handleAuthRedirect(){
-      const href=window.location.href;
-      const hasCode = href.includes('code=') || href.includes('access_token=');
-      if (hasCode){
-        try{
+      try{
+        const href = window.location.href;
+        const hasCode = href.includes('code=') || href.includes('access_token=');
+        if (hasCode){
           const { error } = await supa.auth.exchangeCodeForSession(href);
           if (error) setMsg('Error de inicio: ' + error.message, 'err');
-        } finally {
+          // clean URL always to avoid accidental detection
           window.history.replaceState({}, document.title, REDIRECT_URL);
         }
-      }
+      }catch(e){ console.error('handleAuthRedirect error', e); }
     }
 
-    /* ===== Jornada logic (identical to your requirements) ===== */
+    async function refreshAuthUI(){
+      try{
+        const { data:{ user } } = await supa.auth.getUser();
+        if (user){ $('whoami') && ($('whoami').textContent = `Sesión: ${user.email}`); $('btn-logout') && ($('btn-logout').style.display='inline-block'); setMsg('Sesión iniciada','ok'); loadWeekFromCloud(); }
+        else { $('whoami') && ($('whoami').textContent = 'Sin sesión'); $('btn-logout') && ($('btn-logout').style.display='none'); setMsg('No has iniciado sesión','info'); }
+      }catch(e){ console.error('refreshAuthUI error', e); }
+    }
+
+    /* ---------------- Jornada logic ---------------- */
     const TARGET_MIN = Math.round(37.5*60);
     const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
     const WDN  = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
     const WORK_START = 7*60+30, WORK_END = 19*60;
-
-    const rowsEl=$('rows'); const selYear=$('sel-year'), selMonth=$('sel-month'), selWeek=$('sel-week');
 
     const pad=(n,w=2)=>String(n).padStart(w,'0');
     const fmtHM = m => { const sign=m<0?'-':''; m=Math.abs(m); const h=Math.floor(m/60),mm=m%60; return `${sign}${h} h ${pad(mm)}`; };
@@ -342,6 +343,7 @@
       return `${cap(m.weekday)} ${m.day.padStart(2,'0')} de ${cap(m.month)} de ${m.year}`;
     }
 
+    // state
     let currentMonday, weekDates=[];
     const state=[], ui=[];
 
@@ -354,223 +356,382 @@
       return Math.max(0,b-a);
     }
 
+    // local storage
     const STORAGE_KEY='horas375_by_date_v2';
     const loadLocal = ()=>{ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); }catch{ return {}; } };
     const saveLocal = db => localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+
     function fillStateFromLocal(){
-      const db=loadLocal();
+      const db = loadLocal();
       for(const r of state){
-        const rec=db[r.dateKey]||{e:'',s:'',k:null};
-        r.e=rec.e||''; r.s=rec.s||''; r.kind=rec.k||null;
+        const rec = db[r.dateKey] || { e:'', s:'', k:null };
+        r.e = rec.e || ''; r.s = rec.s || ''; r.kind = rec.k || null;
       }
     }
     function saveDayLocal(r){
-      const db=loadLocal(); db[r.dateKey]={ e:r.e||'', s:r.s||'', k:r.kind||null }; saveLocal(db);
+      const db = loadLocal();
+      db[r.dateKey] = { e:r.e||'', s:r.s||'', k:r.kind||null };
+      saveLocal(db);
     }
 
     function makeKindSelect(){
-      const sel=document.createElement('select');
-      sel.innerHTML = `
-        <option value="">— (TR)</option>
-        <option value="VA">VA</option>
-        <option value="AP">AP</option>
-        <option value="OP">OP</option>
-      `;
+      const sel = document.createElement('select');
+      sel.innerHTML = '<option value="">— (TR)</option><option value="VA">VA</option><option value="AP">AP</option><option value="OP">OP</option>';
       return sel;
     }
 
     function makeRow(i){
-      const r=state[i];
-      const row=document.createElement('div'); row.className='grid row';
-      const label=document.createElement('div'); const d=weekDates[i];
-      label.innerHTML = `<div style="font-weight:700">${fmtLongDate(d)}</div>`;
+      const r = state[i];
+      const row = document.createElement('div'); row.className = 'grid row';
 
-      const eIn=document.createElement('input'); eIn.type='time'; eIn.value=r.e||'';
-      const eOut=document.createElement('input'); eOut.type='time'; eOut.value=r.s||'';
-      const td=document.createElement('div'); td.className='totdia'; td.textContent=r.total?fmtHM(r.total):'—';
+      const label = document.createElement('div');
+      label.innerHTML = `<div style="font-weight:700">${fmtLongDate(weekDates[i])}</div>`;
 
-      const kindSel = makeKindSelect(); kindSel.value=(r.kind||'');
+      const eIn = document.createElement('input'); eIn.type='time'; eIn.value = r.e||'';
+      const eOut = document.createElement('input'); eOut.type='time'; eOut.value = r.s||'';
+      const td = document.createElement('div'); td.className='totdia'; td.textContent = r.total ? fmtHM(r.total) : '—';
 
-      function applyKindUI(){
-        const isSpecial = (kindSel.value==='VA'||kindSel.value==='AP'||kindSel.value==='OP');
+      const kindSel = makeKindSelect(); kindSel.value = r.kind || '';
+
+      const applyKindUI = ()=> {
+        const isSpecial = (kindSel.value==='VA' || kindSel.value==='AP' || kindSel.value==='OP');
         eIn.style.display = isSpecial ? 'none' : 'block';
         eOut.style.display = isSpecial ? 'none' : 'block';
-      }
+      };
 
       kindSel.addEventListener('change', ()=>{
         r.kind = kindSel.value || null;
         if (r.kind){ r.e=''; r.s=''; }
         saveDayLocal(r);
-        recalcWeekTotals(); renderCalendar();
-        clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud,300);
-        if (!r.kind){ eIn.value=r.e||''; eOut.value=r.s||''; }
+        recalcWeekTotals();
+        renderCalendar();
+        clearTimeout(saveTimer); saveTimer = setTimeout(saveWeekToCloud, 300);
+        if (!r.kind){ eIn.value = r.e || ''; eOut.value = r.s || ''; }
         applyKindUI();
       });
 
-      eIn.addEventListener('input', ()=>{ r.e=eIn.value; r.kind=null; kindSel.value=''; saveDayLocal(r); recalcWeekTotals(); renderCalendar(); clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud,300); });
-      eOut.addEventListener('input', ()=>{ r.s=eOut.value; r.kind=null; kindSel.value=''; saveDayLocal(r); recalcWeekTotals(); renderCalendar(); clearTimeout(saveTimer); saveTimer=setTimeout(saveWeekToCloud,300); });
+      eIn.addEventListener('input', ()=>{ r.e = eIn.value; r.kind = null; kindSel.value = ''; saveDayLocal(r); recalcWeekTotals(); renderCalendar(); clearTimeout(saveTimer); saveTimer = setTimeout(saveWeekToCloud,300); });
+      eOut.addEventListener('input', ()=>{ r.s = eOut.value; r.kind = null; kindSel.value = ''; saveDayLocal(r); recalcWeekTotals(); renderCalendar(); clearTimeout(saveTimer); saveTimer = setTimeout(saveWeekToCloud,300); });
 
       applyKindUI();
-
       row.appendChild(label); row.appendChild(eIn); row.appendChild(eOut); row.appendChild(td); row.appendChild(kindSel);
-      rowsEl.appendChild(row); ui[i]={td,eIn,eOut,kindSel};
+      rowsEl.appendChild(row);
+      ui[i] = { td, eIn, eOut, kindSel };
     }
 
-    function rebuildRows(){ rowsEl.innerHTML=''; ui.length=0; for(let i=0;i<state.length;i++) makeRow(i); }
+    function rebuildRows(){
+      try{
+        rowsEl.innerHTML = '';
+        ui.length = 0;
+        for (let i=0;i<state.length;i++) makeRow(i);
+      }catch(e){ console.error('rebuildRows error', e); }
+    }
 
     function recalcWeekTotals(){
-      for(let i=0;i<state.length;i++){
-        const r=state[i];
-        let mins=0;
-        if (r.kind){ mins = 7.5*60; } else { const m=overlapMins(parseTime(r.e), parseTime(r.s)); mins = m || 0; }
-        r.total=mins; ui[i].td.textContent = mins?fmtHM(mins):'—';
-      }
-      const sum = state.reduce((a,b)=>a+(b.total||0),0);
-      $('total-semana').textContent=fmtHM(sum);
-      const rest=TARGET_MIN - sum; $('faltan').textContent=fmtHM(rest);
-      const k=$('kpi-faltan'); k.classList.remove('ok','warn','err');
-      if (rest===0) k.classList.add('ok'); else if (rest>0) k.classList.add('warn'); else k.classList.add('err');
-      $('wklabel').textContent=isoWeekKey(currentMonday);
+      try{
+        for (let i=0;i<state.length;i++){
+          const r = state[i];
+          let mins = 0;
+          if (r.kind) mins = 7.5*60;
+          else { const m = overlapMins(parseTime(r.e), parseTime(r.s)); mins = m || 0; }
+          r.total = mins;
+          ui[i].td.textContent = mins ? fmtHM(mins) : '—';
+        }
+        const sum = state.reduce((a,b)=>a + (b.total||0),0);
+        safeSetText('total-semana', fmtHM(sum));
+        const rest = TARGET_MIN - sum;
+        safeSetText('faltan', fmtHM(rest));
+        const kEl = $('kpi-faltan'); if (kEl){ kEl.classList.remove('ok','warn','err'); if (rest===0) kEl.classList.add('ok'); else if (rest>0) kEl.classList.add('warn'); else kEl.classList.add('err'); }
+        safeSetText('wklabel', isoWeekKey(currentMonday));
+      }catch(e){ console.error('recalcWeekTotals error', e); }
     }
 
-    let saveTimer=null;
+    // supabase sync
+    let saveTimer = null;
     async function saveWeekToCloud(){
-      const { data:{ user } } = await supa.auth.getUser(); if (!user) return;
-      const payload=state.map(r=>({
-        user_id:user.id,
-        work_date:r.dateKey,
-        e:(r.kind? '' : (r.e||'')),
-        s:(r.kind? '' : (r.s||'')),
-        minutes:r.kind? 450 : (overlapMins(parseTime(r.e), parseTime(r.s))||0),
-        kind: r.kind || null
-      }));
-      await supa.from('work_days').upsert(payload, { onConflict:'user_id,work_date' });
+      try{
+        const { data:{ user } } = await supa.auth.getUser();
+        if (!user) return;
+        const payload = state.map(r=>({
+          user_id: user.id,
+          work_date: r.dateKey,
+          e: r.kind ? '' : (r.e||''),
+          s: r.kind ? '' : (r.s||''),
+          minutes: r.kind ? 450 : (overlapMins(parseTime(r.e), parseTime(r.s)) || 0),
+          kind: r.kind || null
+        }));
+        const { error } = await supa.from('work_days').upsert(payload, { onConflict:'user_id,work_date' });
+        if (error) console.error('saveWeekToCloud error', error);
+      }catch(e){ console.error('saveWeekToCloud exception', e); }
     }
 
     async function loadWeekFromCloud(){
-      const { data:{ user } } = await supa.auth.getUser(); if (!user) return;
-      const from=fmtDate(weekDates[0]), to=fmtDate(weekDates[4]);
-      const { data, error } = await supa
-        .from('work_days')
-        .select('work_date,e,s,minutes,kind')
-        .eq('user_id',user.id)
-        .gte('work_date',from)
-        .lte('work_date',to);
-      if (error) return;
-      if (data && data.length){
-        const byDate=Object.fromEntries(data.map(d=>[d.work_date,d]));
-        for(const r of state){
-          const d=byDate[r.dateKey]; if (!d) continue;
-          if (d.kind==='VA'||d.kind==='AP'||d.kind==='OP'){ r.kind=d.kind; r.e=''; r.s=''; }
-          else{ r.kind=null; r.e=d.e||''; r.s=d.s||''; }
-          saveDayLocal(r);
+      try{
+        const { data:{ user } } = await supa.auth.getUser(); if (!user) return;
+        const from = fmtDate(weekDates[0]), to = fmtDate(weekDates[4]);
+        const { data, error } = await supa.from('work_days').select('work_date,e,s,minutes,kind').eq('user_id',user.id).gte('work_date',from).lte('work_date',to);
+        if (error){ console.error('loadWeekFromCloud error', error); return; }
+        if (data && data.length){
+          const byDate = Object.fromEntries(data.map(d=>[d.work_date,d]));
+          for (const r of state){
+            const d = byDate[r.dateKey];
+            if (!d) continue;
+            if (d.kind === 'VA' || d.kind === 'AP' || d.kind === 'OP'){ r.kind = d.kind; r.e=''; r.s=''; }
+            else { r.kind = null; r.e = d.e || ''; r.s = d.s || ''; }
+            saveDayLocal(r);
+          }
+          for (let i=0;i<state.length;i++){
+            ui[i].eIn.value = state[i].e;
+            ui[i].eOut.value = state[i].s;
+            ui[i].eIn.style.display = state[i].kind ? 'none' : 'block';
+            ui[i].eOut.style.display = state[i].kind ? 'none' : 'block';
+            ui[i].kindSel.value = state[i].kind || '';
+          }
+          recalcWeekTotals(); renderCalendar();
         }
-        for(let i=0;i<state.length;i++){
-          ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s;
-          ui[i].eIn.style.display = state[i].kind ? 'none' : 'block';
-          ui[i].eOut.style.display = state[i].kind ? 'none' : 'block';
-          ui[i].kindSel.value = state[i].kind || '';
-        }
-        recalcWeekTotals(); renderCalendar();
-      }
+      }catch(e){ console.error('loadWeekFromCloud exception', e); }
     }
 
-    /* calendar rendering */
-    const calDows=$('cal-dows'), calDays=$('cal-days'), calTitle=$('cal-title');
-    (function renderDOWHeader(){ if (calDows) calDows.innerHTML=WDN.map(d=>`<div class="cal-dow">${d}</div>`).join(''); })();
+    // selects / navigation
+    function populateYearMonth(){
+      const now = new Date();
+      const thisYear = now.getFullYear();
+      $('sel-year').innerHTML = [thisYear-1, thisYear, thisYear+1].map(y=>`<option value="${y}">${y}</option>`).join('');
+      $('sel-year').value = thisYear;
+      const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      $('sel-month').innerHTML = months.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+      $('sel-month').value = now.getMonth();
+    }
+    function populateWeeksForMonth(){
+      const y = parseInt($('sel-year').value,10), m = parseInt($('sel-month').value,10);
+      const weeks = weeksOfMonth(y,m);
+      if (!weeks.length){ $('sel-week').innerHTML = '<option>(sin semanas)</option>'; return; }
+      $('sel-week').innerHTML = weeks.map(d=>{
+        const end = addDays(d,6); const wk = isoWeekKey(d).split('W')[1];
+        return `<option value="${d.toISOString()}">Sem ${wk} · ${pad(d.getDate())}/${pad(d.getMonth()+1)}–${pad(end.getDate())}/${pad(end.getMonth()+1)}</option>`;
+      }).join('');
+      const today = getMonday(new Date()); const match = weeks.find(w=>w.getTime() === toMidnight(today).getTime());
+      $('sel-week').value = (match ? match : weeks[0]).toISOString();
+    }
 
+    function rebuildStateForMonday(mon){
+      currentMonday = toMidnight(mon);
+      buildWeekDates(currentMonday);
+      state.length = 0;
+      for (let i=0;i<5;i++){
+        state.push({ dia: DIAS[i], dateKey: fmtDate(weekDates[i]), e:'', s:'', total:0, kind:null });
+      }
+      rebuildRows();
+      fillStateFromLocal();
+      // reflect in ui
+      for (let i=0;i<state.length;i++){
+        ui[i].eIn.value = state[i].e || '';
+        ui[i].eOut.value = state[i].s || '';
+        ui[i].eIn.style.display = state[i].kind ? 'none' : 'block';
+        ui[i].eOut.style.display = state[i].kind ? 'none' : 'block';
+        ui[i].kindSel.value = state[i].kind || '';
+      }
+      recalcWeekTotals();
+      renderCalendar();
+    }
+
+    function loadWeek(isoStr){
+      try{ rebuildStateForMonday(new Date(isoStr)); loadWeekFromCloud(); }catch(e){ console.error('loadWeek error', e); }
+    }
+
+    // events for nav
+    $('sel-year')?.addEventListener('change', ()=>{ populateWeeksForMonth(); loadWeek($('sel-week').value); });
+    $('sel-month')?.addEventListener('change', ()=>{ populateWeeksForMonth(); loadWeek($('sel-week').value); });
+    $('sel-week')?.addEventListener('change', ()=>{ loadWeek($('sel-week').value); });
+
+    $('btn-prev')?.addEventListener('click', ()=>{
+      try{
+        const prev = addDays(currentMonday,-7);
+        $('sel-year').value = prev.getFullYear();
+        $('sel-month').value = prev.getMonth();
+        populateWeeksForMonth();
+        const iso = prev.toISOString();
+        const opt = Array.from($('sel-week').options).find(o=>o.value===iso);
+        $('sel-week').value = opt ? iso : $('sel-week').options[0].value;
+        loadWeek($('sel-week').value);
+      }catch(e){ console.error(e); }
+    });
+    $('btn-next')?.addEventListener('click', ()=>{
+      try{
+        const next = addDays(currentMonday,7);
+        $('sel-year').value = next.getFullYear();
+        $('sel-month').value = next.getMonth();
+        populateWeeksForMonth();
+        const iso = next.toISOString();
+        const found = Array.from($('sel-week').options).find(o=>o.value===iso);
+        $('sel-week').value = found ? iso : $('sel-week').options[$('sel-week').options.length-1].value;
+        loadWeek($('sel-week').value);
+      }catch(e){ console.error(e); }
+    });
+
+    // CSV week export/import
+    function toCSV(){
+      const header=['Fecha','Día','Entrada','Salida','Total_día']; const lines=[header.join(',')];
+      for (const r of state) lines.push([r.dateKey, r.dia, r.kind ? '' : (r.e||''), r.kind ? '' : (r.s||''), fmtHM(r.kind?450:r.total||0)].join(','));
+      lines.push(''); lines.push(['Semana', isoWeekKey(currentMonday)].join(',')); lines.push(['Total semana', $('total-semana')?.textContent || ''].join(',')); lines.push(['Faltan/Exceso vs 37,5h', $('faltan')?.textContent || ''].join(','));
+      return lines.join('\n');
+    }
+    $('btn-exportar')?.addEventListener('click', ()=>{
+      try{
+        const blob = new Blob([toCSV()], { type:'text/csv;charset=utf-8;' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `horas_${isoWeekKey(currentMonday)}.csv`; a.click(); URL.revokeObjectURL(a.href);
+      }catch(e){ console.error('export week error', e); }
+    });
+    $('btn-importar')?.addEventListener('click', ()=> $('importar').click());
+    $('importar')?.addEventListener('change', async (ev)=>{
+      try{
+        const file = ev.target.files[0]; if(!file) return;
+        const text = (await file.text()).replace(/^\uFEFF/,'');
+        const lines = text.split(/\r?\n/).filter(Boolean);
+        const data = lines.slice(1).filter(l=>!l.startsWith('Semana') && !l.startsWith('Total semana') && !l.startsWith('Faltan/Exceso'));
+        const mapByDate = {};
+        for (const line of data){
+          const p = line.split(',');
+          if (p.length < 5) continue;
+          const dateKey = p[0], e = p[2]||'', s = p[3]||'';
+          mapByDate[dateKey] = { e, s };
+        }
+        for (const r of state){
+          if (mapByDate[r.dateKey]){
+            r.e = mapByDate[r.dateKey].e; r.s = mapByDate[r.dateKey].s; r.kind = null; saveDayLocal(r);
+          }
+        }
+        for (let i=0;i<state.length;i++){
+          ui[i].kindSel.value=''; ui[i].eIn.style.display='block'; ui[i].eOut.style.display='block';
+          ui[i].eIn.value = state[i].e; ui[i].eOut.value = state[i].s;
+        }
+        recalcWeekTotals();
+        ev.target.value = '';
+        saveWeekToCloud();
+        renderCalendar();
+      }catch(e){ console.error('import week error', e); }
+    });
+
+    // CSV month export/import (careful: fixed bug in previous version: use s:eOut not s=eOut)
+    function monthRange(year, monthIdx){ const first=new Date(year,monthIdx,1); const last=new Date(year,monthIdx+1,0); return { first, last }; }
+    function isWeekday(d){ const wd = d.getDay(); return wd>=1 && wd<=5; }
+
+    function toCSVMonth(){
+      try{
+        const y = parseInt($('sel-year').value,10), m = parseInt($('sel-month').value,10);
+        const { first, last } = monthRange(y,m);
+        const db = loadLocal();
+        const header = ['Fecha','Día','Entrada','Salida','Total_día']; const lines = [header.join(',')];
+        let sum = 0;
+        for (let d = new Date(first); d <= last; d = addDays(d,1)){
+          if (!isWeekday(d)) continue;
+          const key = fmtDate(d); const rec = db[key] || { e:'', s:'', k:null };
+          const mins = rec.k ? 450 : (overlapMins(parseTime(rec.e), parseTime(rec.s)) || 0);
+          sum += mins || 0;
+          const dia = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()];
+          lines.push([key, dia, rec.k ? '' : (rec.e || ''), rec.k ? '' : (rec.s || ''), mins ? fmtHM(mins) : ''].join(','));
+        }
+        lines.push(''); lines.push(['Mes', `${pad(m+1)}/${y}`].join(',')); lines.push(['Total mes (L–V)', fmtHM(sum)].join(','));
+        return lines.join('\n');
+      }catch(e){ console.error('toCSVMonth error', e); return ''; }
+    }
+
+    $('btn-exportar-mes')?.addEventListener('click', ()=>{
+      try{
+        const y = parseInt($('sel-year').value,10), m = parseInt($('sel-month').value,10);
+        const blob = new Blob([toCSVMonth()], { type:'text/csv;charset=utf-8;' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `horas_mes_${y}-${pad(m+1)}.csv`; a.click(); URL.revokeObjectURL(a.href);
+      }catch(e){ console.error('export month error', e); }
+    });
+
+    $('btn-importar-mes')?.addEventListener('click', ()=> $('importar-mes').click());
+    $('importar-mes')?.addEventListener('change', async (ev)=>{
+      try{
+        const file = ev.target.files[0]; if(!file) return;
+        const y = parseInt($('sel-year').value,10), m = parseInt($('sel-month').value,10);
+        const { first, last } = monthRange(y,m);
+        const text = (await file.text()).replace(/^\uFEFF/,'');
+        const lines = text.split(/\r?\n/).filter(Boolean);
+        const data = lines.slice(1).filter(l=>!/^Mes,|^Total mes/.test(l));
+        const db = loadLocal(); const changed = [];
+        for (const line of data){
+          const p = line.split(',');
+          if (p.length < 5) continue;
+          const dateKey = p[0], eIn = p[2]||'', eOut = p[3]||'';
+          const d = new Date(dateKey + 'T00:00:00');
+          if (isNaN(d)) continue;
+          if (d < first || d > last) continue;
+          // correct assignment (previously had a bug here)
+          db[dateKey] = { e: eIn, s: eOut, k: null };
+          changed.push(dateKey);
+        }
+        saveLocal(db);
+        fillStateFromLocal();
+        for (let i=0;i<state.length;i++){
+          ui[i].kindSel.value=''; ui[i].eIn.style.display='block'; ui[i].eOut.style.display='block';
+          ui[i].eIn.value = state[i].e; ui[i].eOut.value = state[i].s;
+        }
+        recalcWeekTotals();
+        ev.target.value = '';
+        renderCalendar();
+        // upload changed to cloud if logged in
+        const { data:{ user } } = await supa.auth.getUser();
+        if (user && changed.length){
+          const payload = changed.map(k=>{
+            const rec = db[k]||{ e:'', s:'', k:null };
+            return { user_id: user.id, work_date: k, e: rec.k ? '' : (rec.e||''), s: rec.k ? '' : (rec.s||''), minutes: rec.k ? 450 : (overlapMins(parseTime(rec.e), parseTime(rec.s))||0), kind: rec.k || null };
+          });
+          await supa.from('work_days').upsert(payload, { onConflict: 'user_id,work_date' });
+        }
+      }catch(e){ console.error('import month error', e); }
+    });
+
+    // mini calendar
+    const calDows = $('cal-dows'), calDays = $('cal-days'), calTitle = $('cal-title');
+    (function renderDOWHeader(){ if (calDows) calDows.innerHTML = WDN.map(d=>`<div class="cal-dow">${d}</div>`).join(''); })();
     function dayStatus(dateKey){
-      const db=loadLocal()[dateKey]; if (!db) return null;
+      const db = loadLocal()[dateKey]; if (!db) return null;
       if (db.k==='VA') return 'va';
       if (db.k==='AP') return 'ap';
       if (db.k==='OP') return 'op';
       const mins = overlapMins(parseTime(db.e||''), parseTime(db.s||''))||0;
       return mins>0 ? 'tr' : null;
     }
-
     function renderCalendar(){
       if (!calDays || !calTitle) return;
-      const y=parseInt(selYear.value,10), m=parseInt(selMonth.value,10);
+      const y = parseInt($('sel-year').value,10), m = parseInt($('sel-month').value,10);
       calTitle.textContent = new Intl.DateTimeFormat('es-ES',{month:'long',year:'numeric'}).format(new Date(y,m,1));
-      const first=new Date(y,m,1), start = addDays(first, -((first.getDay()+6)%7)), totalCells=42; let html='';
-      for(let i=0;i<totalCells;i++){
-        const d=addDays(start,i), inMonth = d.getMonth()===m;
+      const first = new Date(y,m,1);
+      const start = addDays(first, -((first.getDay()+6)%7));
+      const totalCells = 42;
+      let html = '';
+      for (let i=0;i<totalCells;i++){
+        const d = addDays(start,i);
+        const inMonth = d.getMonth() === m;
         if (!inMonth){ html += `<div class="cal-day empty">${d.getDate()}</div>`; continue; }
-        const key=fmtDate(d); const st=dayStatus(key); const cls=st?st:'';
+        const key = fmtDate(d); const st = dayStatus(key); const cls = st ? st : '';
         html += `<div class="cal-day ${cls}">${d.getDate()}</div>`;
       }
       calDays.innerHTML = html;
     }
 
-    /* CSV week/month and import handlers (same as previous) */
-    function toCSV(){
-      const header=['Fecha','Día','Entrada','Salida','Total_día']; const lines=[header.join(',')];
-      for(const r of state) lines.push([r.dateKey, r.dia, r.kind?'':r.e, r.kind?'':r.s, fmtHM(r.kind?450:r.total||0)].join(','));
-      const total=$('total-semana').textContent, faltan=$('faltan').textContent;
-      lines.push(''); lines.push(['Semana', isoWeekKey(currentMonday)].join(',')); lines.push(['Total semana', total].join(',')); lines.push(['Faltan/Exceso vs 37,5h', faltan].join(','));
-      return lines.join('\n');
-    }
-    $('btn-exportar')?.addEventListener('click', ()=>{
-      const blob=new Blob([toCSV()], {type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`horas_${isoWeekKey(currentMonday)}.csv`; a.click(); URL.revokeObjectURL(a.href);
-    });
-    $('btn-importar')?.addEventListener('click', ()=> $('importar').click());
-    $('importar')?.addEventListener('change', async (e)=>{
-      const file=e.target.files[0]; if(!file) return; const text=(await file.text()).replace(/^\uFEFF/,'');
-      const lines=text.split(/\r?\n/).filter(l=>l.trim().length); const data=lines.slice(1).filter(l=>!l.startsWith('Semana') && !l.startsWith('Total semana') && !l.startsWith('Faltan/Exceso'));
-      const mapByDate={}; for(const line of data){ const p=line.split(','); if(p.length<5) continue; const dateKey=p[0], e2=p[2]||'', s2=p[3]||''; mapByDate[dateKey]={e:e2,s:s2}; }
-      for(const r of state){ if(mapByDate[r.dateKey]){ r.e=mapByDate[r.dateKey].e; r.s=mapByDate[r.dateKey].s; r.kind=null; saveDayLocal(r);} }
-      for(let i=0;i<state.length;i++){ ui[i].kindSel.value=''; ui[i].eIn.style.display='block'; ui[i].eOut.style.display='block'; ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s; }
-      recalcWeekTotals(); e.target.value=''; saveWeekToCloud(); renderCalendar();
-    });
-
-    function monthRange(year, monthIdx){ const first=new Date(year,monthIdx,1), last=new Date(year,monthIdx+1,0); return {first,last}; }
-    function isWeekday(d){ const wd=d.getDay(); return wd>=1 && wd<=5; }
-    function toCSVMonth(){
-      const y=parseInt(selYear.value,10), m=parseInt(selMonth.value,10); const {first,last}=monthRange(y,m); const db=loadLocal();
-      const header=['Fecha','Día','Entrada','Salida','Total_día']; const lines=[header.join(',')]; let sum=0;
-      for(let d=new Date(first); d<=last; d=addDays(d,1)){ if(!isWeekday(d)) continue; const key=fmtDate(d); const rec=db[key]||{e:'',s:'',k:null}; const mins = rec.k?450:(overlapMins(parseTime(rec.e),parseTime(rec.s))||0); sum += mins||0; const dia = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()]; lines.push([key,dia, rec.k?'':(rec.e||''), rec.k?'':(rec.s||''), mins?fmtHM(mins):''].join(',')); }
-      lines.push(''); lines.push(['Mes', `${pad(m+1)}/${y}`].join(',')); lines.push(['Total mes (L–V)', fmtHM(sum)].join(','));
-      return lines.join('\n');
-    }
-    $('btn-exportar-mes')?.addEventListener('click', ()=>{
-      const y=parseInt(selYear.value,10), m=parseInt(selMonth.value,10); const blob=new Blob([toCSVMonth()], {type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`horas_mes_${y}-${pad(m+1)}.csv`; a.click(); URL.revokeObjectURL(a.href);
-    });
-    $('btn-importar-mes')?.addEventListener('click', ()=> $('importar-mes').click());
-    $('importar-mes')?.addEventListener('change', async (e)=>{
-      const file=e.target.files[0]; if(!file) return; const y=parseInt(selYear.value,10), m=parseInt(selMonth.value,10); const {first,last}=monthRange(y,m);
-      const text=(await file.text()).replace(/^\uFEFF/,''); const lines=text.split(/\r?\n/).filter(l=>l.trim().length); const data=lines.slice(1).filter(l=>!/^Mes,|^Total mes/.test(l));
-      const db=loadLocal(); const changed=[];
-      for(const line of data){ const p=line.split(','); if(p.length<5) continue; const dateKey=p[0], eIn=p[2]||'', eOut=p[3]||''; const d=new Date(dateKey+'T00:00:00'); if (isNaN(d)) continue; if (d<first || d>last) continue; db[dateKey]={e:eIn,s:eOut,k:null}; changed.push(dateKey); }
-      saveLocal(db); fillStateFromLocal();
-      for(let i=0;i<state.length;i++){ ui[i].kindSel.value=''; ui[i].eIn.style.display='block'; ui[i].eOut.style.display='block'; ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s; }
-      recalcWeekTotals(); e.target.value=''; renderCalendar();
-      const { data:{ user } } = await supa.auth.getUser();
-      if (user && changed.length){
-        const payload=changed.map(k=>{ const rec=db[k]||{e:'',s:'',k:null}; return { user_id:user.id, work_date:k, e:rec.k?'':(rec.e||''), s:rec.k?'':(rec.s||''), minutes: rec.k?450:(overlapMins(parseTime(rec.e),parseTime(rec.s))||0), kind: rec.k||null }; });
-        await supa.from('work_days').upsert(payload, { onConflict:'user_id,work_date' });
-      }
-    });
-
-    /* Init */
+    // init
     document.addEventListener('DOMContentLoaded', async ()=>{
-      const now=new Date();
-      (function initYM(){
-        const thisYear=now.getFullYear();
-        selYear.innerHTML=[thisYear-1,thisYear,thisYear+1].map(y=>`<option value="${y}">${y}</option>`).join(''); selYear.value=thisYear;
-        const months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-        selMonth.innerHTML=months.map((m,i)=>`<option value="${i}">${m}</option>`).join(''); selMonth.value=now.getMonth();
-      })();
-      (function initWeeks(){
-        const y=parseInt(selYear.value,10), m=parseInt(selMonth.value,10), weeks=weeksOfMonth(y,m);
-        selWeek.innerHTML=weeks.map(d=>{ const end=addDays(d,6), wk=isoWeekKey(d).split('W')[1]; return `<option value="${d.toISOString()}">Sem ${wk} · ${pad(d.getDate())}/${pad(d.getMonth()+1)}–${pad(end.getDate())}/${pad(end.getMonth()+1)}</option>`; }).join('');
-        const today=getMonday(new Date()); const match=weeks.find(w=>w.getTime()===toMidnight(today).getTime());
-        selWeek.value=(match?match:weeks[0]).toISOString();
-      })();
-      rebuildStateForMonday(new Date(selWeek.value));
-      await handleAuthRedirect();
-      await refreshAuthUI();
-      renderCalendar();
+      try{
+        const now = new Date();
+        // populate year/month/week
+        populateYearMonth();
+        populateWeeksForMonth();
+        // build initial week
+        const initialWeekIso = $('sel-week')?.value || new Date().toISOString();
+        rebuildStateForMonday(new Date(initialWeekIso));
+        await handleAuthRedirect();
+        await refreshAuthUI();
+        renderCalendar();
+      }catch(e){ console.error('DOMContentLoaded init error', e); }
     });
+
+  })();
   </script>
 </body>
 </html>
