@@ -29,12 +29,16 @@
     .kpi.ok .val{color:var(--ok)}.kpi.warn .val{color:var(--warn)}.kpi.err .val{color:var(--err)}
     .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
     .hint{color:var(--muted);font-size:12px;margin-top:8px}
+
+    /* Auth */
     .auth-box{display:flex;flex-direction:column;gap:8px;min-width:300px}
     .auth-tabs{display:flex;gap:8px;margin-top:2px}
     .tab{padding:6px 10px;border:1px solid #1f2937;border-radius:10px;cursor:pointer}
     .tab.active{background:#0b1e2f}
     .auth-views>div{display:none;margin-top:8px;gap:8px;align-items:center;flex-wrap:wrap}
     .auth-views>div.active{display:flex}
+
+    /* Mini calendario */
     .cal-wrap{margin-top:18px}
     .cal-head{display:flex;justify-content:space-between;align-items:center;margin:8px 0;color:var(--muted);font-size:13px}
     .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
@@ -48,11 +52,16 @@
     .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:12px}
     .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
     .dot.tr{background:#22c55e}.dot.va{background:#3b82f6}.dot.ap{background:#f59e0b}.dot.op{background:#ef4444}
+
+    /* Safety */
     #modal-reset-proxy{display:none!important}
+
+    /* Modal (clonado desde <template>) */
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:2000}
     .modal .box{background:var(--card);border:1px solid #1f2937;border-radius:16px;padding:20px;max-width:420px;width:90%;box-shadow:0 8px 30px rgba(0,0,0,.5)}
     .modal h3{margin:0 0 8px}
     .modal .msg{font-size:13px;color:var(--muted);margin-bottom:10px}
+
     @media (max-width:900px){
       .grid{grid-template-columns:1fr 1fr 1fr 1fr 1fr}
       .head{display:none}
@@ -65,7 +74,7 @@
       <header>
         <div>
           <h1>
-            <span class="flag" title="Asturias">
+            <span class="flag" title="Asturias" aria-label="Bandera de Asturias">
               <svg viewBox="0 0 110 110" width="28" height="28" role="img" aria-hidden="true">
                 <defs><clipPath id="clip-ast"><circle cx="55" cy="55" r="55"/></clipPath></defs>
                 <g clip-path="url(#clip-ast)">
@@ -79,6 +88,7 @@
           <div class="sub">Sin sesión: guarda local por fecha. Con sesión: se sincroniza en la cuenta activa.</div>
         </div>
 
+        <!-- AUTH -->
         <div class="auth-box">
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <span id="whoami" style="color:var(--muted);">Sin sesión</span>
@@ -164,8 +174,10 @@
     </div>
   </div>
 
+  <!-- safety hidden node -->
   <div id="modal-reset-proxy" aria-hidden="true"></div>
 
+  <!-- modal template (no se muestra hasta necesitarlo) -->
   <template id="tpl-modal-reset">
     <div class="modal" id="modal-reset" role="dialog" aria-modal="true">
       <div class="box">
@@ -185,106 +197,115 @@
   <script>
   (function(){
     'use strict';
+    /* ===== Supabase ===== */
     const SUPABASE_URL  = "https://izkwmbtyzvdiwfvenzbb.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6a3dtYnR5enZkaXdmdmVuemJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzU1ODEsImV4cCI6MjA3NzgxMTU4MX0.jrJNclTJO3uy5WP6q5i01aQbiryQuTWGE1KIUyowAhw";
     const REDIRECT_URL  = window.location.origin;
     const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
 
+    /* === Tabs de autenticación (mostrar/ocultar vistas) === */
+    (function initAuthTabs(){
+      function activate(tab){
+        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+        tab.classList.add('active');
+        const name = tab.dataset.tab; // "link" | "pwd"
+        document.querySelectorAll('.auth-views>div').forEach(x=>x.classList.remove('active'));
+        if (name === 'link') document.getElementById('view-link')?.classList.add('active');
+        else document.getElementById('view-pwd')?.classList.add('active');
+      }
+      document.addEventListener('click', (ev)=>{
+        const t = ev.target.closest('.tab');
+        if (!t) return;
+        activate(t);
+      });
+    })();
+
+    /* ===== Helpers ===== */
     const $ = id => document.getElementById(id);
+    let rowsEl=null, calDows=null, calDays=null, calTitle=null;
+    const getRowsEl=()=> rowsEl || (rowsEl=$('rows'));
+    const setMsg=(t,ty='info')=>{ const el=$('auth-msg'); if(el){ el.textContent=t; el.className=`msg ${ty}`; } };
+    const setResetMsg=(t,ty='info')=>{ const el=$('reset-msg'); if(el){ el.textContent=t; el.className=`msg ${ty}`; } };
 
-    // mutable DOM refs (set when DOM ready)
-    let rowsEl = null;
-    let calDows = null;
-    let calDays = null;
-    let calTitle = null;
-
-    // safe getter for rowsEl (defensive)
-    function getRowsEl(){
-      if (!rowsEl) rowsEl = $('rows');
-      return rowsEl;
-    }
-
-    function setMsg(t,ty='info'){ const el=$('auth-msg'); if(el){ el.textContent=t; el.className=`msg ${ty}`; } }
-    function setResetMsg(t,ty='info'){ const el=$('reset-msg'); if(el){ el.textContent=t; el.className=`msg ${ty}`; } }
-
+    /* ===== Modal recuperación solo si PASSWORD_RECOVERY ===== */
     function createModalIfNeeded(){
       if ($('modal-reset')) return;
-      const tpl = $('tpl-modal-reset'); if (!tpl) return;
-      const clone = tpl.content.cloneNode(true);
-      document.body.appendChild(clone);
-      $('btn-cancel-reset')?.addEventListener('click', ()=> { removeModal(); });
+      const tpl=$('tpl-modal-reset'); if(!tpl) return;
+      const clone=tpl.content.cloneNode(true); document.body.appendChild(clone);
+      $('btn-cancel-reset')?.addEventListener('click', removeModal);
       $('btn-do-reset')?.addEventListener('click', async ()=>{
-        const np = ($('new-pass')?.value||'').trim();
-        if (!np){ setResetMsg('Pon una nueva contraseña','warn'); return; }
+        const np=($('new-pass')?.value||'').trim();
+        if(!np){ setResetMsg('Pon una nueva contraseña','warn'); return; }
         setResetMsg('Actualizando contraseña...','info');
-        try{
-          const { error } = await supa.auth.updateUser({ password: np });
-          if (error) setResetMsg('Error al actualizar: ' + error.message, 'err');
-          else { setResetMsg('Contraseña actualizada','ok'); setTimeout(()=>removeModal(),900); }
-        }catch(err){ setResetMsg('Error: '+(err.message||err),'err'); console.error(err); }
+        const { error } = await supa.auth.updateUser({ password: np });
+        if (error) setResetMsg('Error al actualizar: ' + error.message, 'err');
+        else { setResetMsg('Contraseña actualizada','ok'); setTimeout(removeModal,900); }
       });
     }
     function showModal(){ const m=$('modal-reset'); if(m){ m.style.display='flex'; m.setAttribute('aria-hidden','false'); } }
-    function removeModal(){ const m=$('modal-reset'); if(m) m.remove(); const proxy = $('modal-reset-proxy'); if(proxy) proxy.setAttribute('aria-hidden','true'); }
+    function removeModal(){ const m=$('modal-reset'); if(m) m.remove(); $('modal-reset-proxy')?.setAttribute('aria-hidden','true'); }
 
     supa.auth.onAuthStateChange((event)=>{
-      try{
-        if (event === 'PASSWORD_RECOVERY'){ createModalIfNeeded(); showModal(); }
-        else { const m=$('modal-reset'); if(m){ m.style.display='none'; m.setAttribute('aria-hidden','true'); } }
-        if (['SIGNED_IN','SIGNED_OUT','USER_UPDATED','TOKEN_REFRESHED'].includes(event)) refreshAuthUI();
-      }catch(e){ console.error(e); }
+      if (event==='PASSWORD_RECOVERY'){ createModalIfNeeded(); showModal(); }
+      else { const m=$('modal-reset'); if(m){ m.style.display='none'; m.setAttribute('aria-hidden','true'); } }
+      if (['SIGNED_IN','SIGNED_OUT','USER_UPDATED','TOKEN_REFRESHED'].includes(event)) refreshAuthUI();
     });
 
+    /* ===== Acciones auth ===== */
     $('btn-login-link')?.addEventListener('click', async ()=>{
-      const mail = ($('email-link')?.value||'').trim(); if(!mail){ setMsg('Pon tu email','warn'); return; }
+      const mail=($('email-link')?.value||'').trim();
+      if(!mail){ setMsg('Pon tu email','warn'); return; }
       setMsg('Enviando enlace...','info');
-      try{ const { error } = await supa.auth.signInWithOtp({ email:mail, options:{ emailRedirectTo: REDIRECT_URL } }); if (error) setMsg('Error enviando enlace: '+error.message,'err'); else setMsg('Te envié un enlace. Ábrelo desde este mismo navegador.','ok'); }catch(err){ setMsg('Error: '+(err.message||err),'err'); console.error(err); }
+      const { error } = await supa.auth.signInWithOtp({ email:mail, options:{ emailRedirectTo: REDIRECT_URL } });
+      if (error) setMsg('Error enviando enlace: '+error.message,'err'); else setMsg('Te envié un enlace. Ábrelo desde este mismo navegador.','ok');
     });
 
     $('btn-login-pwd')?.addEventListener('click', async ()=>{
       const mail=($('email-pwd')?.value||'').trim(), pass=($('pass-pwd')?.value||'').trim();
       if(!mail||!pass){ setMsg('Email y contraseña son obligatorios','warn'); return; }
       setMsg('Iniciando sesión...','info');
-      try{ const { error } = await supa.auth.signInWithPassword({ email:mail, password:pass }); if (error) setMsg('Error al iniciar sesión: '+error.message,'err'); else setMsg('Sesión iniciada','ok'); refreshAuthUI(); }catch(err){ setMsg('Error: '+(err.message||err),'err'); console.error(err); }
+      const { error } = await supa.auth.signInWithPassword({ email:mail, password:pass });
+      if (error) setMsg('Error al iniciar sesión: '+error.message,'err'); else setMsg('Sesión iniciada','ok');
+      refreshAuthUI();
     });
 
     $('btn-register-pwd')?.addEventListener('click', async ()=>{
       const mail=($('email-pwd')?.value||'').trim(), pass=($('pass-pwd')?.value||'').trim();
       if(!mail||!pass){ setMsg('Email y contraseña son obligatorios','warn'); return; }
       setMsg('Creando cuenta...','info');
-      try{ const { data, error } = await supa.auth.signUp({ email:mail, password:pass, options:{ emailRedirectTo: REDIRECT_URL } }); if (error) setMsg('Error al registrarse: '+error.message,'err'); else { if (data.user?.identities?.length===0) setMsg('Correo ya registrado. Inicia sesión.','warn'); else setMsg('Cuenta creada. Revisa tu email.','ok'); } refreshAuthUI(); }catch(err){ setMsg('Error: '+(err.message||err),'err'); console.error(err); }
+      const { data, error } = await supa.auth.signUp({ email:mail, password:pass, options:{ emailRedirectTo: REDIRECT_URL } });
+      if (error) setMsg('Error al registrarse: '+error.message,'err');
+      else { if (data.user?.identities?.length===0) setMsg('Correo ya registrado. Inicia sesión.','warn'); else setMsg('Cuenta creada. Revisa tu email.','ok'); }
+      refreshAuthUI();
     });
 
     $('btn-forgot')?.addEventListener('click', async ()=>{
       const mail=($('email-pwd')?.value||'').trim();
       if(!mail){ setMsg('Pon tu email para recuperar la contraseña','warn'); return; }
       setMsg('Enviando email de recuperación...','info');
-      try{ const { error } = await supa.auth.resetPasswordForEmail(mail, { redirectTo: REDIRECT_URL }); if (error) setMsg('Error al enviar recuperación: '+error.message,'err'); else setMsg('Te envié un email para recuperar la contraseña.','ok'); }catch(err){ setMsg('Error: '+(err.message||err),'err'); console.error(err); }
+      const { error } = await supa.auth.resetPasswordForEmail(mail, { redirectTo: REDIRECT_URL });
+      if (error) setMsg('Error al enviar recuperación: '+error.message,'err'); else setMsg('Te envié un email para recuperar la contraseña.','ok');
     });
 
-    $('btn-logout')?.addEventListener('click', async ()=>{ try{ await supa.auth.signOut(); setMsg('Sesión cerrada','info'); refreshAuthUI(); }catch(e){ console.error(e); } });
+    $('btn-logout')?.addEventListener('click', async ()=>{ await supa.auth.signOut(); setMsg('Sesión cerrada','info'); refreshAuthUI(); });
 
     async function handleAuthRedirect(){
-      try{
-        const href = window.location.href;
-        const hasCode = href.includes('code=') || href.includes('access_token=');
-        if (hasCode){
-          const { error } = await supa.auth.exchangeCodeForSession(href);
-          if (error) setMsg('Error de inicio: ' + error.message, 'err');
-          window.history.replaceState({}, document.title, REDIRECT_URL);
-        }
-      }catch(e){ console.error('handleAuthRedirect error', e); }
+      const href=window.location.href;
+      const hasCode = href.includes('code=') || href.includes('access_token=');
+      if (hasCode){
+        const { error } = await supa.auth.exchangeCodeForSession(href);
+        if (error) setMsg('Error de inicio: ' + error.message, 'err');
+        window.history.replaceState({}, document.title, REDIRECT_URL);
+      }
     }
 
     async function refreshAuthUI(){
-      try{
-        const { data:{ user } } = await supa.auth.getUser();
-        if (user){ $('whoami') && ($('whoami').textContent = `Sesión: ${user.email}`); $('btn-logout') && ($('btn-logout').style.display='inline-block'); setMsg('Sesión iniciada','ok'); loadWeekFromCloud(); }
-        else { $('whoami') && ($('whoami').textContent = 'Sin sesión'); $('btn-logout') && ($('btn-logout').style.display='none'); setMsg('No has iniciado sesión','info'); }
-      }catch(e){ console.error('refreshAuthUI error', e); }
+      const { data:{ user } } = await supa.auth.getUser();
+      if (user){ $('whoami') && ($('whoami').textContent=`Sesión: ${user.email}`); $('btn-logout') && ($('btn-logout').style.display='inline-block'); setMsg('Sesión iniciada','ok'); loadWeekFromCloud(); }
+      else { $('whoami') && ($('whoami').textContent='Sin sesión'); $('btn-logout') && ($('btn-logout').style.display='none'); setMsg('No has iniciado sesión','info'); }
     }
 
-    /* Jornada logic */
+    /* ===== Jornada ===== */
     const TARGET_MIN = Math.round(37.5*60);
     const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
     const WDN  = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
@@ -300,6 +321,7 @@
     function isoWeekKey(d){ return `${isoWeekYear(d)}-W${pad(isoWeekNumber(d))}`; }
     function weeksOfMonth(year, monthIdx){ const res=[]; const first=new Date(year,monthIdx,1), last=new Date(year,monthIdx+1,0); let d=new Date(first); while(d.getDay()!==1) d=addDays(d,1); while(d<=last){ res.push(toMidnight(d)); d=addDays(d,7);} return res; }
     const fmtDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
     const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
     function fmtLongDate(d){
       const parts=new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).formatToParts(d);
@@ -372,321 +394,225 @@
 
       applyKindUI();
 
-      (getRowsEl() || document.body).appendChild(row); // append to rows container (defensive)
-      // insert children in correct order
+      (getRowsEl() || document.body).appendChild(row);
       row.appendChild(label); row.appendChild(eIn); row.appendChild(eOut); row.appendChild(td); row.appendChild(kindSel);
 
       ui[i] = { td, eIn, eOut, kindSel };
     }
 
     function rebuildRows(){
-      try{
-        const container = getRowsEl();
-        if (!container) { console.warn('rebuildRows: no container found'); return; }
-        container.innerHTML = '';
-        ui.length = 0;
-        for (let i=0;i<state.length;i++) makeRow(i);
-      }catch(e){ console.error('rebuildRows error', e); }
+      const container = getRowsEl(); if (!container) return;
+      container.innerHTML = '';
+      ui.length = 0;
+      for (let i=0;i<state.length;i++) makeRow(i);
     }
 
     function recalcWeekTotals(){
-      try{
-        for (let i=0;i<state.length;i++){
-          const r = state[i];
-          let mins = 0;
-          if (r.kind) mins = 7.5*60;
-          else { const m = overlapMins(parseTime(r.e), parseTime(r.s)); mins = m || 0; }
-          r.total = mins;
-          if (ui[i] && ui[i].td) ui[i].td.textContent = mins ? fmtHM(mins) : '—';
-        }
-        const sum = state.reduce((a,b)=>a + (b.total||0),0);
-        if ($('total-semana')) $('total-semana').textContent = fmtHM(sum);
-        const rest = TARGET_MIN - sum;
-        if ($('faltan')) $('faltan').textContent = fmtHM(rest);
-        const kEl = $('kpi-faltan'); if (kEl){ kEl.classList.remove('ok','warn','err'); if (rest===0) kEl.classList.add('ok'); else if (rest>0) kEl.classList.add('warn'); else kEl.classList.add('err'); }
-        if ($('wklabel')) $('wklabel').textContent = isoWeekKey(currentMonday);
-      }catch(e){ console.error('recalcWeekTotals error', e); }
+      for (let i=0;i<state.length;i++){
+        const r = state[i];
+        let mins = 0;
+        if (r.kind) mins = 7.5*60;
+        else { const m = overlapMins(parseTime(r.e), parseTime(r.s)); mins = m || 0; }
+        r.total = mins;
+        if (ui[i] && ui[i].td) ui[i].td.textContent = mins ? fmtHM(mins) : '—';
+      }
+      const sum = state.reduce((a,b)=>a + (b.total||0),0);
+      $('total-semana') && ( $('total-semana').textContent = fmtHM(sum) );
+      const rest = TARGET_MIN - sum;
+      $('faltan') && ( $('faltan').textContent = fmtHM(rest) );
+      const kEl = $('kpi-faltan'); if (kEl){ kEl.classList.remove('ok','warn','err'); if (rest===0) kEl.classList.add('ok'); else if (rest>0) kEl.classList.add('warn'); else kEl.classList.add('err'); }
+      $('wklabel') && ( $('wklabel').textContent = isoWeekKey(currentMonday) );
     }
 
     let saveTimer = null;
     async function saveWeekToCloud(){
-      try{
-        const { data:{ user } } = await supa.auth.getUser();
-        if (!user) return;
-        const payload = state.map(r=>({
-          user_id: user.id,
-          work_date: r.dateKey,
-          e: r.kind ? '' : (r.e||''),
-          s: r.kind ? '' : (r.s||''),
-          minutes: r.kind ? 450 : (overlapMins(parseTime(r.e), parseTime(r.s)) || 0),
-          kind: r.kind || null
-        }));
-        const { error } = await supa.from('work_days').upsert(payload, { onConflict:'user_id,work_date' });
-        if (error) console.error('saveWeekToCloud error', error);
-      }catch(e){ console.error('saveWeekToCloud exception', e); }
+      const { data:{ user } } = await supa.auth.getUser();
+      if (!user) return;
+      const payload = state.map(r=>({
+        user_id: user.id,
+        work_date: r.dateKey,
+        e: r.kind ? '' : (r.e||''),
+        s: r.kind ? '' : (r.s||''),
+        minutes: r.kind ? 450 : (overlapMins(parseTime(r.e), parseTime(r.s)) || 0),
+        kind: r.kind || null
+      }));
+      await supa.from('work_days').upsert(payload, { onConflict:'user_id,work_date' });
     }
 
     async function loadWeekFromCloud(){
-      try{
-        const { data:{ user } } = await supa.auth.getUser(); if (!user) return;
-        const from = fmtDate(weekDates[0]), to = fmtDate(weekDates[4]);
-        const { data, error } = await supa.from('work_days').select('work_date,e,s,minutes,kind').eq('user_id',user.id).gte('work_date',from).lte('work_date',to);
-        if (error){ console.error('loadWeekFromCloud error', error); return; }
-        if (data && data.length){
-          const byDate = Object.fromEntries(data.map(d=>[d.work_date,d]));
-          for (const r of state){
-            const d = byDate[r.dateKey];
-            if (!d) continue;
-            if (d.kind === 'VA' || d.kind === 'AP' || d.kind === 'OP'){ r.kind = d.kind; r.e=''; r.s=''; }
-            else { r.kind = null; r.e = d.e || ''; r.s = d.s || ''; }
-            saveDayLocal(r);
-          }
-          for (let i=0;i<state.length;i++){
-            if (ui[i]){
-              ui[i].eIn.value = state[i].e;
-              ui[i].eOut.value = state[i].s;
-              ui[i].eIn.style.display = state[i].kind ? 'none' : 'block';
-              ui[i].eOut.style.display = state[i].kind ? 'none' : 'block';
-              ui[i].kindSel.value = state[i].kind || '';
-            }
-          }
-          recalcWeekTotals(); renderCalendar();
+      const { data:{ user } } = await supa.auth.getUser(); if (!user) return;
+      const from = fmtDate(weekDates[0]), to = fmtDate(weekDates[4]);
+      const { data, error } = await supa.from('work_days').select('work_date,e,s,minutes,kind').eq('user_id',user.id).gte('work_date',from).lte('work_date',to);
+      if (error) return;
+      if (data && data.length){
+        const byDate = Object.fromEntries(data.map(d=>[d.work_date,d]));
+        for (const r of state){
+          const d = byDate[r.dateKey]; if (!d) continue;
+          if (d.kind==='VA'||d.kind==='AP'||d.kind==='OP'){ r.kind=d.kind; r.e=''; r.s=''; }
+          else{ r.kind=null; r.e=d.e||''; r.s=d.s||''; }
+          saveDayLocal(r);
         }
-      }catch(e){ console.error('loadWeekFromCloud exception', e); }
-    }
-
-    function populateYearMonth(){
-      const now = new Date();
-      const thisYear = now.getFullYear();
-      $('sel-year').innerHTML = [thisYear-1, thisYear, thisYear+1].map(y=>`<option value="${y}">${y}</option>`).join('');
-      $('sel-year').value = thisYear;
-      const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-      $('sel-month').innerHTML = months.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
-      $('sel-month').value = now.getMonth();
-    }
-
-    function populateWeeksForMonth(){
-      try{
-        const y = parseInt($('sel-year').value,10), m = parseInt($('sel-month').value,10);
-        const weeks = weeksOfMonth(y,m);
-        if (!weeks.length){ $('sel-week').innerHTML = '<option>(sin semanas)</option>'; return; }
-        $('sel-week').innerHTML = weeks.map(d=>{
-          const end = addDays(d,6); const wk = isoWeekKey(d).split('W')[1];
-          return `<option value="${d.toISOString()}">Sem ${wk} · ${pad(d.getDate())}/${pad(d.getMonth()+1)}–${pad(end.getDate())}/${pad(end.getMonth()+1)}</option>`;
-        }).join('');
-        const today = getMonday(new Date()); const match = weeks.find(w=>w.getTime() === toMidnight(today).getTime());
-        $('sel-week').value = (match ? match : weeks[0]).toISOString();
-      }catch(e){ console.error('populateWeeksForMonth error', e); }
-    }
-
-    function rebuildStateForMonday(mon){
-      try{
-        currentMonday = toMidnight(mon);
-        buildWeekDates(currentMonday);
-        state.length = 0;
-        for (let i=0;i<5;i++){
-          state.push({ dia: DIAS[i], dateKey: fmtDate(weekDates[i]), e:'', s:'', total:0, kind:null });
-        }
-        rebuildRows();
-        fillStateFromLocal();
         for (let i=0;i<state.length;i++){
           if (ui[i]){
-            ui[i].eIn.value = state[i].e || '';
-            ui[i].eOut.value = state[i].s || '';
+            ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s;
             ui[i].eIn.style.display = state[i].kind ? 'none' : 'block';
             ui[i].eOut.style.display = state[i].kind ? 'none' : 'block';
             ui[i].kindSel.value = state[i].kind || '';
           }
         }
-        recalcWeekTotals();
-        renderCalendar();
-      }catch(e){ console.error('rebuildStateForMonday error', e); }
+        recalcWeekTotals(); renderCalendar();
+      }
     }
 
-    function loadWeek(isoStr){
-      try{ rebuildStateForMonday(new Date(isoStr)); loadWeekFromCloud(); }catch(e){ console.error('loadWeek error', e); }
+    /* ===== Navegación ===== */
+    function populateYearMonth(){
+      const now = new Date();
+      const thisYear = now.getFullYear();
+      $('sel-year').innerHTML = [thisYear-1,thisYear,thisYear+1].map(y=>`<option value="${y}">${y}</option>`).join(''); $('sel-year').value=thisYear;
+      const months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      $('sel-month').innerHTML = months.map((m,i)=>`<option value="${i}">${m}</option>`).join(''); $('sel-month').value=now.getMonth();
     }
+    function populateWeeksForMonth(){
+      const y=parseInt($('sel-year').value,10), m=parseInt($('sel-month').value,10), weeks=weeksOfMonth(y,m);
+      if (!weeks.length){ $('sel-week').innerHTML='<option>(sin semanas)</option>'; return; }
+      $('sel-week').innerHTML = weeks.map(d=>{
+        const end=addDays(d,6); const wk=isoWeekKey(d).split('W')[1];
+        return `<option value="${d.toISOString()}">Sem ${wk} · ${pad(d.getDate())}/${pad(d.getMonth()+1)}–${pad(end.getDate())}/${pad(end.getMonth()+1)}</option>`;
+      }).join('');
+      const today=getMonday(new Date()); const match=weeks.find(w=>w.getTime()===toMidnight(today).getTime());
+      $('sel-week').value=(match?match:weeks[0]).toISOString();
+    }
+
+    function rebuildStateForMonday(mon){
+      currentMonday = toMidnight(mon);
+      buildWeekDates(currentMonday);
+      state.length=0;
+      for(let i=0;i<5;i++){
+        state.push({ dia: DIAS[i], dateKey: fmtDate(weekDates[i]), e:'', s:'', total:0, kind:null });
+      }
+      rebuildRows();
+      fillStateFromLocal();
+      for(let i=0;i<state.length;i++){
+        if (ui[i]){
+          ui[i].eIn.value=state[i].e||''; ui[i].eOut.value=state[i].s||'';
+          ui[i].eIn.style.display = state[i].kind ? 'none' : 'block';
+          ui[i].eOut.style.display = state[i].kind ? 'none' : 'block';
+          ui[i].kindSel.value = state[i].kind || '';
+        }
+      }
+      recalcWeekTotals();
+      renderCalendar();
+    }
+
+    function loadWeek(isoStr){ rebuildStateForMonday(new Date(isoStr)); loadWeekFromCloud(); }
 
     $('sel-year')?.addEventListener('change', ()=>{ populateWeeksForMonth(); loadWeek($('sel-week').value); });
     $('sel-month')?.addEventListener('change', ()=>{ populateWeeksForMonth(); loadWeek($('sel-week').value); });
     $('sel-week')?.addEventListener('change', ()=>{ loadWeek($('sel-week').value); });
 
     $('btn-prev')?.addEventListener('click', ()=>{
-      try{
-        const prev = addDays(currentMonday,-7);
-        $('sel-year').value = prev.getFullYear();
-        $('sel-month').value = prev.getMonth();
-        populateWeeksForMonth();
-        const iso = prev.toISOString();
-        const opt = Array.from($('sel-week').options).find(o=>o.value===iso);
-        $('sel-week').value = opt ? iso : $('sel-week').options[0].value;
-        loadWeek($('sel-week').value);
-      }catch(e){ console.error(e); }
+      const prev=addDays(currentMonday,-7);
+      $('sel-year').value=prev.getFullYear(); $('sel-month').value=prev.getMonth(); populateWeeksForMonth();
+      const iso=prev.toISOString(); const opt=[...$('sel-week').options].find(o=>o.value===iso);
+      $('sel-week').value=(opt?iso:$('sel-week').options[0].value); loadWeek($('sel-week').value);
     });
-
     $('btn-next')?.addEventListener('click', ()=>{
-      try{
-        const next = addDays(currentMonday,7);
-        $('sel-year').value = next.getFullYear();
-        $('sel-month').value = next.getMonth();
-        populateWeeksForMonth();
-        const iso = next.toISOString();
-        const found = Array.from($('sel-week').options).find(o=>o.value===iso);
-        $('sel-week').value = found ? iso : $('sel-week').options[$('sel-week').options.length-1].value;
-        loadWeek($('sel-week').value);
-      }catch(e){ console.error(e); }
+      const next=addDays(currentMonday,7);
+      $('sel-year').value=next.getFullYear(); $('sel-month').value=next.getMonth(); populateWeeksForMonth();
+      const iso=next.toISOString(); const found=[...$('sel-week').options].find(o=>o.value===iso);
+      $('sel-week').value=(found?iso:$('sel-week').options[$('sel-week').options.length-1].value); loadWeek($('sel-week').value);
     });
 
-    // CSV week/month handlers (kept defensive)
+    /* ===== CSV Semana ===== */
     function toCSV(){
       const header=['Fecha','Día','Entrada','Salida','Total_día']; const lines=[header.join(',')];
-      for (const r of state) lines.push([r.dateKey, r.dia, r.kind ? '' : (r.e||''), r.kind ? '' : (r.s||''), fmtHM(r.kind?450:r.total||0)].join(','));
+      for(const r of state) lines.push([r.dateKey, r.dia, r.kind?'':r.e, r.kind?'':r.s, fmtHM(r.kind?450:r.total||0)].join(','));
       lines.push(''); lines.push(['Semana', isoWeekKey(currentMonday)].join(',')); lines.push(['Total semana', $('total-semana')?.textContent || ''].join(',')); lines.push(['Faltan/Exceso vs 37,5h', $('faltan')?.textContent || ''].join(','));
       return lines.join('\n');
     }
     $('btn-exportar')?.addEventListener('click', ()=>{
-      try{ const blob = new Blob([toCSV()], { type:'text/csv;charset=utf-8;' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `horas_${isoWeekKey(currentMonday)}.csv`; a.click(); URL.revokeObjectURL(a.href); }catch(e){ console.error(e); }
+      const blob=new Blob([toCSV()], {type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`horas_${isoWeekKey(currentMonday)}.csv`; a.click(); URL.revokeObjectURL(a.href);
     });
     $('btn-importar')?.addEventListener('click', ()=> $('importar').click());
-    $('importar')?.addEventListener('change', async (ev)=>{
-      try{
-        const file = ev.target.files[0]; if(!file) return;
-        const text = (await file.text()).replace(/^\uFEFF/,'');
-        const lines = text.split(/\r?\n/).filter(Boolean);
-        const data = lines.slice(1).filter(l=>!l.startsWith('Semana') && !l.startsWith('Total semana') && !l.startsWith('Faltan/Exceso'));
-        const mapByDate = {};
-        for (const line of data){
-          const p = line.split(',');
-          if (p.length < 5) continue;
-          const dateKey = p[0], e = p[2]||'', s = p[3]||'';
-          mapByDate[dateKey] = { e, s };
-        }
-        for (const r of state){
-          if (mapByDate[r.dateKey]){ r.e = mapByDate[r.dateKey].e; r.s = mapByDate[r.dateKey].s; r.kind = null; saveDayLocal(r); }
-        }
-        for (let i=0;i<state.length;i++){
-          if (ui[i]){ ui[i].kindSel.value=''; ui[i].eIn.style.display='block'; ui[i].eOut.style.display='block'; ui[i].eIn.value = state[i].e; ui[i].eOut.value = state[i].s; }
-        }
-        recalcWeekTotals();
-        ev.target.value = '';
-        saveWeekToCloud();
-        renderCalendar();
-      }catch(e){ console.error('import week error', e); }
+    $('importar')?.addEventListener('change', async (e)=>{
+      const file=e.target.files[0]; if(!file) return; const text=(await file.text()).replace(/^\uFEFF/,'');
+      const lines=text.split(/\r?\n/).filter(Boolean);
+      const data=lines.slice(1).filter(l=>!l.startsWith('Semana') && !l.startsWith('Total semana') && !l.startsWith('Faltan/Exceso'));
+      const mapByDate={}; for(const line of data){ const p=line.split(','); if(p.length<5) continue; const dateKey=p[0], e2=p[2]||'', s2=p[3]||''; mapByDate[dateKey]={e:e2,s:s2}; }
+      for (const r of state){ if (mapByDate[r.dateKey]){ r.e=mapByDate[r.dateKey].e; r.s=mapByDate[r.dateKey].s; r.kind=null; saveDayLocal(r);} }
+      for(let i=0;i<state.length;i++){ if (ui[i]){ ui[i].kindSel.value=''; ui[i].eIn.style.display='block'; ui[i].eOut.style.display='block'; ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s; } }
+      recalcWeekTotals(); e.target.value=''; saveWeekToCloud(); renderCalendar();
     });
 
-    function monthRange(year, monthIdx){ const first=new Date(year,monthIdx,1); const last=new Date(year,monthIdx+1,0); return { first, last }; }
-    function isWeekday(d){ const wd = d.getDay(); return wd>=1 && wd<=5; }
-
+    /* ===== CSV Mes ===== */
+    function monthRange(year, monthIdx){ const first=new Date(year,monthIdx,1), last=new Date(year,monthIdx+1,0); return {first,last}; }
+    function isWeekday(d){ const wd=d.getDay(); return wd>=1 && wd<=5; }
     function toCSVMonth(){
-      try{
-        const y = parseInt($('sel-year').value,10), m = parseInt($('sel-month').value,10);
-        const { first, last } = monthRange(y,m);
-        const db = loadLocal();
-        const header = ['Fecha','Día','Entrada','Salida','Total_día']; const lines = [header.join(',')];
-        let sum = 0;
-        for (let d = new Date(first); d <= last; d = addDays(d,1)){
-          if (!isWeekday(d)) continue;
-          const key = fmtDate(d); const rec = db[key] || { e:'', s:'', k:null };
-          const mins = rec.k ? 450 : (overlapMins(parseTime(rec.e), parseTime(rec.s)) || 0);
-          sum += mins || 0;
-          const dia = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()];
-          lines.push([key, dia, rec.k ? '' : (rec.e || ''), rec.k ? '' : (rec.s || ''), mins ? fmtHM(mins) : ''].join(','));
-        }
-        lines.push(''); lines.push(['Mes', `${pad(m+1)}/${y}`].join(',')); lines.push(['Total mes (L–V)', fmtHM(sum)].join(','));
-        return lines.join('\n');
-      }catch(e){ console.error('toCSVMonth error', e); return ''; }
+      const y=parseInt($('sel-year').value,10), m=parseInt($('sel-month').value,10); const {first,last}=monthRange(y,m); const db=loadLocal();
+      const header=['Fecha','Día','Entrada','Salida','Total_día']; const lines=[header.join(',')]; let sum=0;
+      for(let d=new Date(first); d<=last; d=addDays(d,1)){ if(!isWeekday(d)) continue; const key=fmtDate(d); const rec=db[key]||{e:'',s:'',k:null}; const mins = rec.k?450:(overlapMins(parseTime(rec.e),parseTime(rec.s))||0); sum += mins||0; const dia = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()]; lines.push([key,dia, rec.k?'':(rec.e||''), rec.k?'':(rec.s||''), mins?fmtHM(mins):''].join(',')); }
+      lines.push(''); lines.push(['Mes', `${pad(m+1)}/${y}`].join(',')); lines.push(['Total mes (L–V)', fmtHM(sum)].join(','));
+      return lines.join('\n');
     }
-
     $('btn-exportar-mes')?.addEventListener('click', ()=>{
-      try{ const y = parseInt($('sel-year').value,10), m = parseInt($('sel-month').value,10); const blob = new Blob([toCSVMonth()], { type:'text/csv;charset=utf-8;' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `horas_mes_${y}-${pad(m+1)}.csv`; a.click(); URL.revokeObjectURL(a.href); }catch(e){ console.error(e); }
+      const y=parseInt($('sel-year').value,10), m=parseInt($('sel-month').value,10); const blob=new Blob([toCSVMonth()], {type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`horas_mes_${y}-${pad(m+1)}.csv`; a.click(); URL.revokeObjectURL(a.href);
     });
     $('btn-importar-mes')?.addEventListener('click', ()=> $('importar-mes').click());
-    $('importar-mes')?.addEventListener('change', async (ev)=>{
-      try{
-        const file = ev.target.files[0]; if(!file) return;
-        const y = parseInt($('sel-year').value,10), m = parseInt($('sel-month').value,10);
-        const { first, last } = monthRange(y,m);
-        const text = (await file.text()).replace(/^\uFEFF/,'');
-        const lines = text.split(/\r?\n/).filter(Boolean);
-        const data = lines.slice(1).filter(l=>!/^Mes,|^Total mes/.test(l));
-        const db = loadLocal(); const changed = [];
-        for (const line of data){
-          const p = line.split(',');
-          if (p.length < 5) continue;
-          const dateKey = p[0], eIn = p[2]||'', eOut = p[3]||'';
-          const d = new Date(dateKey + 'T00:00:00'); if (isNaN(d)) continue;
-          if (d < first || d > last) continue;
-          db[dateKey] = { e: eIn, s: eOut, k: null };
-          changed.push(dateKey);
-        }
-        saveLocal(db);
-        fillStateFromLocal();
-        for (let i=0;i<state.length;i++){
-          if (ui[i]){ ui[i].kindSel.value=''; ui[i].eIn.style.display='block'; ui[i].eOut.style.display='block'; ui[i].eIn.value = state[i].e; ui[i].eOut.value = state[i].s; }
-        }
-        recalcWeekTotals();
-        ev.target.value = '';
-        renderCalendar();
-        const { data:{ user } } = await supa.auth.getUser();
-        if (user && changed.length){
-          const payload = changed.map(k=>{ const rec = db[k]||{ e:'', s:'', k:null }; return { user_id: user.id, work_date: k, e: rec.k ? '' : (rec.e||''), s: rec.k ? '' : (rec.s||''), minutes: rec.k ? 450 : (overlapMins(parseTime(rec.e), parseTime(rec.s))||0), kind: rec.k || null }; });
-          await supa.from('work_days').upsert(payload, { onConflict:'user_id,work_date' });
-        }
-      }catch(e){ console.error('import month error', e); }
+    $('importar-mes')?.addEventListener('change', async (e)=>{
+      const file=e.target.files[0]; if(!file) return; const y=parseInt($('sel-year').value,10), m=parseInt($('sel-month').value,10); const {first,last}=monthRange(y,m);
+      const text=(await file.text()).replace(/^\uFEFF/,''); const lines=text.split(/\r?\n/).filter(Boolean); const data=lines.slice(1).filter(l=>!/^Mes,|^Total mes/.test(l));
+      const db=loadLocal(); const changed=[];
+      for(const line of data){
+        const p=line.split(','); if(p.length<5) continue;
+        const dateKey=p[0], eIn=p[2]||'', eOut=p[3]||'';
+        const d=new Date(dateKey+'T00:00:00'); if (isNaN(d)) continue; if (d<first || d>last) continue;
+        db[dateKey]={e:eIn,s:eOut,k:null}; changed.push(dateKey);
+      }
+      saveLocal(db); fillStateFromLocal();
+      for(let i=0;i<state.length;i++){ if (ui[i]){ ui[i].kindSel.value=''; ui[i].eIn.style.display='block'; ui[i].eOut.style.display='block'; ui[i].eIn.value=state[i].e; ui[i].eOut.value=state[i].s; } }
+      recalcWeekTotals(); e.target.value=''; renderCalendar();
+      const { data:{ user } } = await supa.auth.getUser();
+      if (user && changed.length){
+        const payload=changed.map(k=>{ const rec=db[k]||{e:'',s:'',k:null}; return { user_id:user.id, work_date:k, e:rec.k?'':(rec.e||''), s:rec.k?'':(rec.s||''), minutes: rec.k?450:(overlapMins(parseTime(rec.e),parseTime(rec.s))||0), kind: rec.k||null }; });
+        await supa.from('work_days').upsert(payload, { onConflict:'user_id,work_date' });
+      }
     });
 
-    // calendar
-    (function renderDOWHeader(){ calDows = $('cal-dows'); if (calDows) calDows.innerHTML = WDN.map(d=>`<div class="cal-dow">${d}</div>`).join(''); })();
-    calDays = $('cal-days'); calTitle = $('cal-title');
-
+    /* ===== Calendario ===== */
+    (function renderDOWHeader(){ calDows=$('cal-dows'); if (calDows) calDows.innerHTML=WDN.map(d=>`<div class="cal-dow">${d}</div>`).join(''); })();
+    calDays=$('cal-days'); calTitle=$('cal-title');
     function dayStatus(dateKey){
-      const db = loadLocal()[dateKey]; if (!db) return null;
+      const db=loadLocal()[dateKey]; if (!db) return null;
       if (db.k==='VA') return 'va';
       if (db.k==='AP') return 'ap';
       if (db.k==='OP') return 'op';
-      const mins = overlapMins(parseTime(db.e||''), parseTime(db.s||''))||0;
-      return mins>0 ? 'tr' : null;
+      const mins=overlapMins(parseTime(db.e||''), parseTime(db.s||''))||0;
+      return mins>0?'tr':null;
     }
-
     function renderCalendar(){
-      try{
-        calDays = calDays || $('cal-days'); calTitle = calTitle || $('cal-title');
-        if (!calDays || !calTitle) return;
-        const y = parseInt($('sel-year').value,10), m = parseInt($('sel-month').value,10);
-        calTitle.textContent = new Intl.DateTimeFormat('es-ES',{month:'long',year:'numeric'}).format(new Date(y,m,1));
-        const first = new Date(y,m,1);
-        const start = addDays(first, -((first.getDay()+6)%7));
-        const totalCells = 42;
-        let html = '';
-        for (let i=0;i<totalCells;i++){
-          const d = addDays(start,i);
-          const inMonth = d.getMonth() === m;
-          if (!inMonth){ html += `<div class="cal-day empty">${d.getDate()}</div>`; continue; }
-          const key = fmtDate(d); const st = dayStatus(key); const cls = st ? st : '';
-          html += `<div class="cal-day ${cls}">${d.getDate()}</div>`;
-        }
-        calDays.innerHTML = html;
-      }catch(e){ console.error('renderCalendar error', e); }
+      if (!calDays || !calTitle) return;
+      const y=parseInt($('sel-year').value,10), m=parseInt($('sel-month').value,10);
+      calTitle.textContent=new Intl.DateTimeFormat('es-ES',{month:'long',year:'numeric'}).format(new Date(y,m,1));
+      const first=new Date(y,m,1), start=addDays(first, -((first.getDay()+6)%7)), totalCells=42; let html='';
+      for(let i=0;i<totalCells;i++){
+        const d=addDays(start,i), inMonth=d.getMonth()===m;
+        if(!inMonth){ html+=`<div class="cal-day empty">${d.getDate()}</div>`; continue; }
+        const key=fmtDate(d), st=dayStatus(key), cls=st?st:'';
+        html+=`<div class="cal-day ${cls}">${d.getDate()}</div>`;
+      }
+      calDays.innerHTML=html;
     }
 
-    // init
+    /* ===== Init ===== */
     document.addEventListener('DOMContentLoaded', async ()=>{
-      try{
-        // ensure mutable refs
-        rowsEl = $('rows');
-        calDows = $('cal-dows'); calDays = $('cal-days'); calTitle = $('cal-title');
-
-        const now = new Date();
-        populateYearMonth();
-        populateWeeksForMonth();
-        const initialWeekIso = $('sel-week')?.value || new Date().toISOString();
-        rebuildStateForMonday(new Date(initialWeekIso));
-        await handleAuthRedirect();
-        await refreshAuthUI();
-        renderCalendar();
-      }catch(e){ console.error('DOMContentLoaded init error', e); }
+      rowsEl=$('rows'); calDows=$('cal-dows'); calDays=$('cal-days'); calTitle=$('cal-title');
+      populateYearMonth(); populateWeeksForMonth();
+      const initialWeekIso=$('sel-week')?.value || new Date().toISOString();
+      rebuildStateForMonday(new Date(initialWeekIso));
+      await handleAuthRedirect();
+      await refreshAuthUI();
+      renderCalendar();
     });
-
   })();
   </script>
 </body>
