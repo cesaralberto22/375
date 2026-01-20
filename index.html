@@ -9,24 +9,65 @@
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--fg)}
     .wrap{max-width:1100px;margin:0 auto;padding:20px}
-    .card{background:var(--card);border:1px solid #1f2937;border-radius:16px;padding:18px}
-    h1{margin:0;font-size:20px;font-weight:800}
-    select,input[type=time],button{padding:8px;border-radius:8px;border:1px solid #1f2937;background:#0b1220;color:var(--fg)}
-    .grid{display:grid;grid-template-columns:240px 1fr 1fr 140px 180px;gap:8px;align-items:center}
+    .card{background:var(--card);border:1px solid #1f2937;border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    h1{margin:0;font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px}
+    .sub{color:var(--muted);font-size:13px;margin-top:6px}
+    header{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    select,button,input[type=time]{padding:9px 12px;border-radius:10px;border:1px solid #1f2937;background:#0b1220;color:var(--fg);font-weight:600}
+    .grid{display:grid;grid-template-columns:240px 1fr 1fr 140px 180px;gap:8px;align-items:center;margin-top:10px}
+    .head{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+    .row{padding:8px;border-radius:12px}
     .row:nth-child(even){background:rgba(148,163,184,.06)}
     .totdia{font-weight:700}
+    .totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}
+    .kpi{background:rgba(148,163,184,.06);border:1px solid #1f2937;border-radius:14px;padding:14px}
+    .kpi .lbl{font-size:12px;color:var(--muted)}
+    .kpi .val{font-size:18px;font-weight:800;margin-top:6px}
+    .kpi.ok .val{color:var(--ok)}.kpi.warn .val{color:var(--warn)}.kpi.err .val{color:var(--err)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
+    .cal-wrap{margin-top:18px}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+    .cal-day{height:34px;border:1px solid #1f2937;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700}
+    .cal-day.tr{background:rgba(34,197,94,.18)}
+    .cal-day.va{background:rgba(59,130,246,.18)}
+    .cal-day.ap{background:rgba(245,158,11,.18)}
+    .cal-day.op{background:rgba(239,68,68,.18)}
+    .cal-day.dc{background:rgba(168,85,247,.18)}
   </style>
 </head>
 
 <body>
 <div class="wrap">
 <div class="card">
-<h1>Registro de Jornada 37,5 h - Principado de Asturias - DGDIA</h1>
 
-<div class="grid">
+<header>
+  <div>
+    <h1>Registro de Jornada 37,5 h - Principado de Asturias - DGDIA</h1>
+    <div class="sub">Control semanal con almacenamiento local y sincronización opcional</div>
+  </div>
+
+  <div class="controls">
+    <select id="sel-year"></select>
+    <select id="sel-month"></select>
+    <select id="sel-week"></select>
+  </div>
+</header>
+
+<div class="grid head">
   <div>Día</div><div>Entrada</div><div>Salida</div><div>Total día</div><div>Tipo</div>
 </div>
 <div id="rows"></div>
+
+<div class="totals">
+  <div class="kpi"><div class="lbl">Total semana</div><div class="val" id="total-semana">0 h</div></div>
+  <div class="kpi"><div class="lbl">Objetivo</div><div class="val">37,5 h</div></div>
+  <div class="kpi" id="kpi-faltan"><div class="lbl">Faltan / Exceso</div><div class="val" id="faltan">0 h</div></div>
+</div>
+
+<div class="cal-wrap">
+  <div class="cal-grid" id="cal-days"></div>
+</div>
 
 </div>
 </div>
@@ -35,60 +76,45 @@
 (function(){
 'use strict';
 
-/* ===================== CONFIG ===================== */
-const TARGET_MIN = 37.5 * 60;
+/* ===== CONFIG ===== */
+const TARGET_MIN = 2250;
 const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
-const WORK_START = 7*60+30;
-const WORK_END   = 19*60;
 const STORAGE_KEY='horas375_by_date_v2';
 
-/* ===================== HELPERS ===================== */
+/* ===== HELPERS ===== */
 const pad=n=>String(n).padStart(2,'0');
 const fmtHM=m=>`${Math.floor(m/60)} h ${pad(m%60)}`;
 const parseTime=s=>s?((+s.split(':')[0])*60+(+s.split(':')[1])):null;
 const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
 const fmtDate=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-const getMonday=d=>{
-  const x=new Date(d);
-  x.setDate(x.getDate()-((x.getDay()+6)%7));
-  x.setHours(0,0,0,0);
-  return x;
-};
+const getMonday=d=>{const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));x.setHours(0,0,0,0);return x};
 
-function overlapMins(start,end){
-  if(start==null||end==null)return 0;
-  if(end<start)end+=1440;
-  return Math.max(0,Math.min(end,WORK_END)-Math.max(start,WORK_START));
-}
-
+/* ===== LOCAL ===== */
 const loadLocal=()=>JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
 const saveLocal=db=>localStorage.setItem(STORAGE_KEY,JSON.stringify(db));
 
-/* ===================== PRECARGA 2026 ===================== */
+/* ===== PRECARGA 2026 ===== */
 function preload2026IfNeeded(){
   const FLAG='preload_2026_done';
   if(localStorage.getItem(FLAG))return;
 
   const db=loadLocal();
-  const year=2026;
-  const weekdays=[];
-  let d=new Date(year,0,1);
+  let d=new Date(2026,0,1);
+  const days=[];
 
-  while(d.getFullYear()===year){
-    if(d.getDay()>=1 && d.getDay()<=5){
-      weekdays.push(new Date(d));
-    }
+  while(d.getFullYear()===2026){
+    if(d.getDay()>=1 && d.getDay()<=5) days.push(new Date(d));
     d=addDays(d,1);
   }
 
-  function assign(count,kind){
-    let used=0;
-    for(const day of weekdays){
-      if(used>=count)break;
+  function assign(n,k){
+    let c=0;
+    for(const day of days){
+      if(c>=n)break;
       const key=fmtDate(day);
       if(!db[key]){
-        db[key]={e:'',s:'',k:kind};
-        used++;
+        db[key]={e:'',s:'',k};
+        c++;
       }
     }
   }
@@ -101,8 +127,9 @@ function preload2026IfNeeded(){
   localStorage.setItem(FLAG,'1');
 }
 
-/* ===================== UI ===================== */
+/* ===== UI ===== */
 const rowsEl=document.getElementById('rows');
+const calDays=document.getElementById('cal-days');
 let state=[];
 
 function makeKindSelect(){
@@ -112,8 +139,7 @@ function makeKindSelect(){
     <option value="VA">VA</option>
     <option value="AP">AP</option>
     <option value="OP">OP</option>
-    <option value="DC">DC</option>
-  `;
+    <option value="DC">DC</option>`;
   return s;
 }
 
@@ -137,23 +163,15 @@ function rebuild(){
 
     function recalc(){
       let mins=0;
-      if(['VA','AP','OP','DC'].includes(r.k)){
-        mins=450;
-      }else{
-        mins=overlapMins(parseTime(r.e),parseTime(r.s));
-      }
+      if(['VA','AP','OP','DC'].includes(r.k)) mins=450;
+      else if(r.e && r.s) mins=parseTime(r.s)-parseTime(r.e);
       t.textContent=mins?fmtHM(mins):'—';
       saveDay(r);
     }
 
     ei.oninput=()=>{r.e=ei.value;r.k=null;ks.value='';recalc()};
     eo.oninput=()=>{r.s=eo.value;r.k=null;ks.value='';recalc()};
-    ks.onchange=()=>{
-      r.k=ks.value||null;
-      r.e='';r.s='';
-      ei.value='';eo.value='';
-      recalc();
-    };
+    ks.onchange=()=>{r.k=ks.value||null;r.e='';r.s='';ei.value='';eo.value='';recalc()};
 
     recalc();
     row.append(d,ei,eo,t,ks);
@@ -161,30 +179,20 @@ function rebuild(){
   });
 }
 
-/* ===================== INIT ===================== */
+/* ===== INIT ===== */
 document.addEventListener('DOMContentLoaded',()=>{
   preload2026IfNeeded();
-
   const monday=getMonday(new Date());
   const db=loadLocal();
   state=[];
-
   for(let i=0;i<5;i++){
     const d=addDays(monday,i);
-    const key=fmtDate(d);
-    const rec=db[key]||{};
-    state.push({
-      dia:DIAS[i],
-      date:key,
-      e:rec.e||'',
-      s:rec.s||'',
-      k:rec.k||null
-    });
+    const k=fmtDate(d);
+    const rec=db[k]||{};
+    state.push({dia:DIAS[i],date:k,e:rec.e||'',s:rec.s||'',k:rec.k||null});
   }
-
   rebuild();
 });
-
 })();
 </script>
 </body>
