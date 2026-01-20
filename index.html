@@ -17,13 +17,14 @@
     .totdia{font-weight:700}
   </style>
 </head>
+
 <body>
 <div class="wrap">
 <div class="card">
 <h1>Registro de Jornada 37,5 h - Principado de Asturias - DGDIA</h1>
 
 <div class="grid">
-  <div>Día</div><div>Entrada</div><div>Salida</div><div>Total</div><div>Tipo</div>
+  <div>Día</div><div>Entrada</div><div>Salida</div><div>Total día</div><div>Tipo</div>
 </div>
 <div id="rows"></div>
 
@@ -34,17 +35,25 @@
 (function(){
 'use strict';
 
+/* ===================== CONFIG ===================== */
 const TARGET_MIN = 37.5 * 60;
 const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
-const WORK_START = 7*60+30, WORK_END = 19*60;
+const WORK_START = 7*60+30;
+const WORK_END   = 19*60;
 const STORAGE_KEY='horas375_by_date_v2';
 
+/* ===================== HELPERS ===================== */
 const pad=n=>String(n).padStart(2,'0');
 const fmtHM=m=>`${Math.floor(m/60)} h ${pad(m%60)}`;
 const parseTime=s=>s?((+s.split(':')[0])*60+(+s.split(':')[1])):null;
 const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
 const fmtDate=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-const getMonday=d=>{const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));x.setHours(0,0,0,0);return x};
+const getMonday=d=>{
+  const x=new Date(d);
+  x.setDate(x.getDate()-((x.getDay()+6)%7));
+  x.setHours(0,0,0,0);
+  return x;
+};
 
 function overlapMins(start,end){
   if(start==null||end==null)return 0;
@@ -55,29 +64,31 @@ function overlapMins(start,end){
 const loadLocal=()=>JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
 const saveLocal=db=>localStorage.setItem(STORAGE_KEY,JSON.stringify(db));
 
-/* ===== PRECARGA SOLO 2026 ===== */
+/* ===================== PRECARGA 2026 ===================== */
 function preload2026IfNeeded(){
   const FLAG='preload_2026_done';
   if(localStorage.getItem(FLAG))return;
 
   const db=loadLocal();
-  const days=[];
-  let d=new Date(2026,0,1);
+  const year=2026;
+  const weekdays=[];
+  let d=new Date(year,0,1);
 
-  while(d.getFullYear()===2026){
-    const wd=d.getDay();
-    if(wd>=1&&wd<=5)days.push(new Date(d));
+  while(d.getFullYear()===year){
+    if(d.getDay()>=1 && d.getDay()<=5){
+      weekdays.push(new Date(d));
+    }
     d=addDays(d,1);
   }
 
-  function assign(n,kind){
-    let c=0;
-    for(const day of days){
-      if(c>=n)break;
-      const k=fmtDate(day);
-      if(!db[k]){
-        db[k]={e:'',s:'',k:kind};
-        c++;
+  function assign(count,kind){
+    let used=0;
+    for(const day of weekdays){
+      if(used>=count)break;
+      const key=fmtDate(day);
+      if(!db[key]){
+        db[key]={e:'',s:'',k:kind};
+        used++;
       }
     }
   }
@@ -90,50 +101,20 @@ function preload2026IfNeeded(){
   localStorage.setItem(FLAG,'1');
 }
 
-/* ===== UI ===== */
+/* ===================== UI ===================== */
 const rowsEl=document.getElementById('rows');
 let state=[];
 
 function makeKindSelect(){
   const s=document.createElement('select');
   s.innerHTML=`
-    <option value="">TR</option>
+    <option value="">— (TR)</option>
     <option value="VA">VA</option>
     <option value="AP">AP</option>
     <option value="OP">OP</option>
-    <option value="DC">DC</option>`;
+    <option value="DC">DC</option>
+  `;
   return s;
-}
-
-function rebuild(){
-  rowsEl.innerHTML='';
-  state.forEach((r,i)=>{
-    const row=document.createElement('div');
-    row.className='grid row';
-
-    const d=document.createElement('div');d.textContent=r.dia;
-    const ei=document.createElement('input');ei.type='time';ei.value=r.e||'';
-    const eo=document.createElement('input');eo.type='time';eo.value=r.s||'';
-    const t=document.createElement('div');t.className='totdia';
-    const ks=makeKindSelect();ks.value=r.k||'';
-
-    function recalc(){
-      let mins=0;
-      if(r.k)mins=450;
-      else mins=overlapMins(parseTime(r.e),parseTime(r.s));
-      t.textContent=mins?fmtHM(mins):'—';
-      saveDay(r);
-    }
-
-    ei.oninput=()=>{r.e=ei.value;r.k=null;ks.value='';recalc()};
-    eo.oninput=()=>{r.s=eo.value;r.k=null;ks.value='';recalc()};
-    ks.onchange=()=>{r.k=ks.value||null;r.e='';r.s='';ei.value='';eo.value='';recalc()};
-
-    recalc();
-
-    row.append(d,ei,eo,t,ks);
-    rowsEl.appendChild(row);
-  });
 }
 
 function saveDay(r){
@@ -142,21 +123,59 @@ function saveDay(r){
   saveLocal(db);
 }
 
-/* ===== INIT ===== */
+function rebuild(){
+  rowsEl.innerHTML='';
+  state.forEach(r=>{
+    const row=document.createElement('div');
+    row.className='grid row';
+
+    const d=document.createElement('div'); d.textContent=r.dia;
+    const ei=document.createElement('input'); ei.type='time'; ei.value=r.e||'';
+    const eo=document.createElement('input'); eo.type='time'; eo.value=r.s||'';
+    const t=document.createElement('div'); t.className='totdia';
+    const ks=makeKindSelect(); ks.value=r.k||'';
+
+    function recalc(){
+      let mins=0;
+      if(['VA','AP','OP','DC'].includes(r.k)){
+        mins=450;
+      }else{
+        mins=overlapMins(parseTime(r.e),parseTime(r.s));
+      }
+      t.textContent=mins?fmtHM(mins):'—';
+      saveDay(r);
+    }
+
+    ei.oninput=()=>{r.e=ei.value;r.k=null;ks.value='';recalc()};
+    eo.oninput=()=>{r.s=eo.value;r.k=null;ks.value='';recalc()};
+    ks.onchange=()=>{
+      r.k=ks.value||null;
+      r.e='';r.s='';
+      ei.value='';eo.value='';
+      recalc();
+    };
+
+    recalc();
+    row.append(d,ei,eo,t,ks);
+    rowsEl.appendChild(row);
+  });
+}
+
+/* ===================== INIT ===================== */
 document.addEventListener('DOMContentLoaded',()=>{
   preload2026IfNeeded();
 
   const monday=getMonday(new Date());
   const db=loadLocal();
-
   state=[];
+
   for(let i=0;i<5;i++){
     const d=addDays(monday,i);
-    const k=fmtDate(d);
-    const rec=db[k]||{};
+    const key=fmtDate(d);
+    const rec=db[key]||{};
     state.push({
       dia:DIAS[i],
-      date:k,
+      date:key,
       e:rec.e||'',
       s:rec.s||'',
       k:rec.k||null
