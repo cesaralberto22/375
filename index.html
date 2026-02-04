@@ -43,13 +43,6 @@
     .auth-views>div{display:none;margin-top:8px;gap:8px;align-items:center;flex-wrap:wrap}
     .auth-views>div.active{display:flex}
 
-    /* Sync */
-    .sync-box{margin-top:14px;border:1px solid #1f2937;border-radius:14px;padding:12px;background:rgba(148,163,184,.05)}
-    .sync-box h3{margin:0 0 6px;font-size:14px}
-    .sync-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .sync-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-    .sync-hint{color:var(--muted);font-size:12px;margin-top:6px}
-
     /* Mini calendario */
     .cal-wrap{margin-top:18px}
     .cal-head{display:flex;justify-content:space-between;align-items:center;margin:8px 0;color:var(--muted);font-size:13px}
@@ -168,20 +161,6 @@
         <button id="btn-exportar-mes">Guardar mes (CSV)</button>
       </div>
 
-      <div class="sync-box" aria-live="polite">
-        <h3>Sincronización automática (MyWebTime)</h3>
-        <div class="sync-grid">
-          <input id="mywebtime-user" type="email" placeholder="Usuario MyWebTime" />
-          <input id="mywebtime-pass" type="password" placeholder="Contraseña MyWebTime" />
-        </div>
-        <input id="mywebtime-proxy" type="text" placeholder="URL del proxy (https://tu-proxy/mywebtime)" style="width:100%;margin-top:8px" />
-        <div class="sync-actions">
-          <button id="btn-save-mywebtime">Guardar credenciales</button>
-          <button id="btn-sync-mywebtime" class="primary">Sincronizar movimientos</button>
-        </div>
-        <div id="mywebtime-msg" class="sync-hint">Necesitas usuario y contraseña. El proxy es obligatorio para evitar el bloqueo CORS.</div>
-      </div>
-
       <div class="cal-wrap">
         <div class="cal-head">
           <div id="cal-title">Calendario</div>
@@ -252,7 +231,6 @@
     const getRowsEl=()=> rowsEl || (rowsEl=$('rows'));
     const setMsg=(t,ty='info')=>{ const el=$('auth-msg'); if(el){ el.textContent=t; el.className=`msg ${ty}`; } };
     const setResetMsg=(t,ty='info')=>{ const el=$('reset-msg'); if(el){ el.textContent=t; el.className=`msg ${ty}`; } };
-    const setSyncMsg=(t)=>{ const el=$('mywebtime-msg'); if(el) el.textContent=t; };
 
     /* ===== Modal recuperación solo si PASSWORD_RECOVERY ===== */
     function createModalIfNeeded(){
@@ -369,11 +347,8 @@
     }
 
     const STORAGE_KEY='horas375_by_date_v2';
-    const MYWEBTIME_KEY='mywebtime_credentials_v1';
     const loadLocal = ()=>{ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); }catch{ return {}; } };
     const saveLocal = db => localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-    const loadMywebtimeCreds = ()=>{ try{ return JSON.parse(localStorage.getItem(MYWEBTIME_KEY)||'{}'); }catch{ return {}; } };
-    const saveMywebtimeCreds = creds => localStorage.setItem(MYWEBTIME_KEY, JSON.stringify(creds));
     function fillStateFromLocal(){
       const db = loadLocal();
       for(const r of state){
@@ -510,81 +485,6 @@
         }
         recalcWeekTotals(); renderCalendar();
       }
-    }
-
-    /* ===== MyWebTime Sync ===== */
-    function hydrateMywebtimeForm(){
-      const creds = loadMywebtimeCreds();
-      if ($('mywebtime-user')) $('mywebtime-user').value = creds.user || '';
-      if ($('mywebtime-pass')) $('mywebtime-pass').value = creds.pass || '';
-      if ($('mywebtime-proxy')) $('mywebtime-proxy').value = creds.proxy || '';
-    }
-
-    function storeMywebtimeCreds(){
-      const user = ($('mywebtime-user')?.value || '').trim();
-      const pass = ($('mywebtime-pass')?.value || '').trim();
-      const proxy = ($('mywebtime-proxy')?.value || '').trim();
-      if (!user || !pass){
-        setSyncMsg('Faltan usuario o contraseña para MyWebTime.');
-        return null;
-      }
-      saveMywebtimeCreds({ user, pass, proxy });
-      setSyncMsg('Credenciales guardadas localmente. Puedes sincronizar cuando quieras.');
-      return { user, pass, proxy };
-    }
-
-    function applyMovementsToLocal(movements){
-      if (!Array.isArray(movements) || !movements.length) return 0;
-      const db = loadLocal();
-      let updated = 0;
-      for (const mv of movements){
-        if (!mv?.date) continue;
-        const key = mv.date;
-        const e = mv.entry || '';
-        const s = mv.exit || '';
-        const kind = mv.kind || null;
-        db[key] = { e, s, k: kind };
-        updated += 1;
-      }
-      saveLocal(db);
-      fillStateFromLocal();
-      for(let i=0;i<state.length;i++){
-        if (ui[i]){
-          ui[i].eIn.value = state[i].e || '';
-          ui[i].eOut.value = state[i].s || '';
-          ui[i].kindSel.value = state[i].kind || '';
-          ui[i].eIn.style.display = state[i].kind ? 'none' : 'block';
-          ui[i].eOut.style.display = state[i].kind ? 'none' : 'block';
-        }
-      }
-      recalcWeekTotals();
-      renderCalendar();
-      return updated;
-    }
-
-    async function syncFromMyWebTime(){
-      const creds = storeMywebtimeCreds();
-      if (!creds) return;
-      if (!creds.proxy){
-        setSyncMsg('Necesitas configurar un proxy para MyWebTime (CORS bloquea el acceso directo).');
-        return;
-      }
-      setSyncMsg('Sincronizando movimientos desde MyWebTime...');
-      const from = fmtDate(weekDates[0]);
-      const to = fmtDate(weekDates[4]);
-      const response = await fetch(creds.proxy, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user: creds.user, pass: creds.pass, from, to })
-      });
-      if (!response.ok){
-        setSyncMsg('No se pudo sincronizar. Revisa el proxy y tus credenciales.');
-        return;
-      }
-      const data = await response.json();
-      const total = applyMovementsToLocal(data?.movements || data);
-      setSyncMsg(total ? `Sincronizados ${total} movimientos.` : 'No hay movimientos nuevos para esta semana.');
-      clearTimeout(saveTimer); saveTimer = setTimeout(saveWeekToCloud, 300);
     }
 
     /* ===== Navegación ===== */
@@ -732,9 +632,6 @@
       populateYearMonth(); populateWeeksForMonth();
       const initialWeekIso=$('sel-week')?.value || new Date().toISOString();
       rebuildStateForMonday(new Date(initialWeekIso));
-      hydrateMywebtimeForm();
-      $('btn-save-mywebtime')?.addEventListener('click', storeMywebtimeCreds);
-      $('btn-sync-mywebtime')?.addEventListener('click', syncFromMyWebTime);
       await handleAuthRedirect();
       await refreshAuthUI();
       renderCalendar();
@@ -743,4 +640,3 @@
   </script>
 </body>
 </html>
-
