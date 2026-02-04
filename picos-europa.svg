@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" role="img" aria-label="Paisaje ilustrado de los Picos de Europa">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f1c3f"/>
+      <stop offset="55%" stop-color="#1b2b5b"/>
+      <stop offset="100%" stop-color="#2b3d6f"/>
+    </linearGradient>
+    <linearGradient id="snow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#cbd5f5"/>
+    </linearGradient>
+    <linearGradient id="lake" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#0b3a80"/>
+    </linearGradient>
+    <linearGradient id="forest" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1f6f4a"/>
+      <stop offset="100%" stop-color="#134e37"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="400" fill="url(#sky)"/>
+  <path d="M0 260 L120 180 L220 230 L320 140 L420 210 L520 130 L640 220 L800 160 L800 400 L0 400 Z" fill="#1f2a44"/>
+  <path d="M80 280 L210 170 L320 230 L410 150 L520 230 L610 170 L740 240 L800 220 L800 400 L0 400 L0 240 Z" fill="#243556"/>
+  <path d="M230 215 L320 140 L395 200 L360 210 L320 180 L270 225 Z" fill="url(#snow)"/>
+  <path d="M480 220 L560 150 L635 205 L600 215 L560 185 L520 230 Z" fill="url(#snow)"/>
+  <path d="M0 320 L160 260 L260 300 L420 250 L580 300 L720 270 L800 290 L800 400 L0 400 Z" fill="url(#forest)"/>
+  <path d="M140 330 C220 300 320 300 410 320 C500 340 620 350 760 340 L760 400 L140 400 Z" fill="url(#lake)"/>
+  <path d="M120 320 C190 310 250 310 320 330" stroke="#60a5fa" stroke-width="4" fill="none" opacity="0.6"/>
+  <path d="M340 330 C420 320 520 325 600 345" stroke="#93c5fd" stroke-width="3" fill="none" opacity="0.4"/>
+</svg>

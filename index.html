@@ -11,7 +11,11 @@
     .wrap{max-width:1100px;margin:0 auto;padding:20px}
     .card{background:var(--card);border:1px solid #1f2937;border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
     h1{margin:0;font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px}
+    .title-blue{color:#3b82f6}
+    .title-yellow{color:#facc15}
     .sub{color:var(--muted);font-size:13px;margin-top:6px}
+    .hero{margin-top:12px;max-width:420px}
+    .hero img{width:100%;height:auto;border-radius:14px;border:1px solid #1f2937;box-shadow:0 10px 24px rgba(0,0,0,.35);display:block}
     header{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     .flag{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden}
     .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
@@ -86,9 +90,12 @@
                 </g>
               </svg>
             </span>
-            Registro de Jornada 37,5 h - Principado de Asturias - DGDIA
+            Registro de Jornada 37,5 h - <span class="title-blue">Principado</span> <span class="title-yellow">de</span> <span class="title-blue">Asturias</span> - DGDIA
           </h1>
           <div class="sub">Sin sesión: guarda local por fecha. Con sesión: se sincroniza en la cuenta activa.</div>
+          <div class="hero" aria-label="Paisaje de los Picos de Europa">
+            <img src="picos-europa.svg" alt="Paisaje ilustrado de los Picos de Europa con montañas y lago." />
+          </div>
         </div>
 
         <!-- AUTH -->
