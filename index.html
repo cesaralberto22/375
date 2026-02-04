@@ -25,6 +25,7 @@
     .totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}
     .kpi{background:rgba(148,163,184,.06);border:1px solid #1f2937;border-radius:14px;padding:14px}
     .kpi .lbl{font-size:12px;color:var(--muted)}
+    .kpi .lbl .emph{font-weight:800}
     .kpi .val{font-size:18px;font-weight:800;margin-top:6px}
     .kpi.ok .val{color:var(--ok)}.kpi.warn .val{color:var(--warn)}.kpi.err .val{color:var(--err)}
     .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
@@ -141,7 +142,7 @@
           <div class="val">37,5 h</div>
         </div>
         <div class="kpi" id="kpi-faltan">
-          <div class="lbl">Faltan / Exceso</div>
+          <div class="lbl"><span id="faltan-label">Faltan</span> / <span id="exceso-label">Exceso</span></div>
           <div class="val" id="faltan">37 h 30 m</div>
         </div>
       </div>
@@ -420,7 +421,25 @@
       $('total-semana') && ( $('total-semana').textContent = fmtHM(sum) );
       const rest = TARGET_MIN - sum;
       $('faltan') && ( $('faltan').textContent = fmtHM(rest) );
-      const kEl = $('kpi-faltan'); if (kEl){ kEl.classList.remove('ok','warn','err'); if (rest===0) kEl.classList.add('ok'); else if (rest>0) kEl.classList.add('warn'); else kEl.classList.add('err'); }
+      const kEl = $('kpi-faltan');
+      const faltanLbl = $('faltan-label');
+      const excesoLbl = $('exceso-label');
+      if (kEl){
+        kEl.classList.remove('ok','warn','err');
+        if (rest === 0){
+          kEl.classList.add('ok');
+          faltanLbl?.classList.remove('emph');
+          excesoLbl?.classList.remove('emph');
+        } else if (rest > 0){
+          kEl.classList.add('err');
+          faltanLbl?.classList.add('emph');
+          excesoLbl?.classList.remove('emph');
+        } else {
+          kEl.classList.add('ok');
+          faltanLbl?.classList.remove('emph');
+          excesoLbl?.classList.add('emph');
+        }
+      }
       $('wklabel') && ( $('wklabel').textContent = isoWeekKey(currentMonday) );
     }
 
